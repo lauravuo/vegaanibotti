@@ -1,6 +1,8 @@
 module github.com/lauravuo/vegaanibotti
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	github.com/lainio/err2 v0.9.41
