@@ -19,3 +19,7 @@
 
 # Go workspace file
 go.work
+
+test_data
+.DS_Store
+.envrc
