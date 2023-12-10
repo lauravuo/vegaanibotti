@@ -35,6 +35,10 @@ func ChooseNextPost(posts []Post) Post {
 		}
 	}
 	usedIDs = append(usedIDs, chosenPost.ID)
+	// if all ids are used, reset array
+	if len(usedIDs) == len(posts) {
+		usedIDs = []int64{}
+	}
 	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), 0644))
 	return *chosenPost
 }

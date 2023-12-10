@@ -20,6 +20,7 @@ type Post struct {
 	Title       string
 	Description string
 	URL         string
+	Hashtags    []string
 	Added       bool `json:"-"`
 }
 

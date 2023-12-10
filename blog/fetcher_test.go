@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/chochidon/blog"
+	"github.com/lauravuo/vegaanibotti/blog"
 )
 
 const testDataPath = "./test_data/"
