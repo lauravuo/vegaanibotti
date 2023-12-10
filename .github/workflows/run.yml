@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     name: send status update
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
       - name: setup
         uses: actions/setup-go@v5
         with:
           go-version-file: './go.mod'
-      - name: checkout
-        uses: actions/checkout@v4
       - name: run app
         run: go run .
         env:
