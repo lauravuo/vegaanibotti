@@ -1,0 +1,3 @@
+package mastodon
+
+func PostToMastodon()
