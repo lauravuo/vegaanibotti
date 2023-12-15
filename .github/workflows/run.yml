@@ -8,6 +8,8 @@ jobs:
   run:
     runs-on: ubuntu-latest
     name: send status update
+    permissions:
+      contents: write
     steps:
       - name: checkout
         uses: actions/checkout@v4
