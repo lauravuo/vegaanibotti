@@ -11,7 +11,7 @@ import (
 
 func main() {
 	posts := try.To1(blog.FetchNewPosts(blog.RecipesPath, myhttp.DoGetRequest))
-	chosenPost := blog.ChooseNextPost(posts)
+	chosenPost := blog.ChooseNextPost(posts, blog.UsedIDsPath)
 	chosenPost.Hashtags = []string{"chocochili", "vegaani", "vegaaniresepti"}
 	slog.Info("Chosen post",
 		"title", chosenPost.Title,

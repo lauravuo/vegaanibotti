@@ -72,7 +72,7 @@ func getID(attrKey, attrValue string) int64 {
 func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
 	// create file if it does not exist
 	if _, err := os.Stat(recipesFilePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(recipesFilePath, []byte("[]"), writePerm))
+		try.To(os.WriteFile(recipesFilePath, []byte("[]"), WritePerm))
 	}
 
 	// read existing posts
@@ -185,7 +185,7 @@ func FetchNewPosts(
 	sort.Slice(posts, func(i, j int) bool {
 		return posts[i].ID > posts[j].ID
 	})
-	try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), writePerm))
+	try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), WritePerm))
 
 	return posts, nil
 }

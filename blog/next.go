@@ -12,12 +12,12 @@ import (
 	"github.com/lainio/err2/try"
 )
 
-const writePerm = 0o600
+const WritePerm = 0o600
 
-func ChooseNextPost(posts []Post) Post {
-	filePath := UsedIDsPath
+func ChooseNextPost(posts []Post, usedIDsPath string) Post {
+	filePath := usedIDsPath
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(filePath, []byte("[]"), writePerm))
+		try.To(os.WriteFile(filePath, []byte("[]"), WritePerm))
 	}
 
 	fileContents := try.To1(os.ReadFile(filePath))
@@ -26,6 +26,12 @@ func ChooseNextPost(posts []Post) Post {
 
 	try.To(json.Unmarshal(fileContents, &usedIDs))
 	count := int64(len(posts) - len(usedIDs))
+
+	// all ids are used, reset
+	if count == 0 {
+		count = int64(len(posts))
+		usedIDs = make([]int64, 0)
+	}
 
 	randomIndex := int(try.To1(rand.Int(rand.Reader, big.NewInt(count))).Int64())
 	slog.Info("Picking random post", "index", randomIndex)
@@ -47,12 +53,8 @@ func ChooseNextPost(posts []Post) Post {
 	}
 
 	usedIDs = append(usedIDs, chosenPost.ID)
-	// if all ids are used, reset array
-	if len(usedIDs) == len(posts) {
-		usedIDs = []int64{}
-	}
 
-	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), writePerm))
+	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), WritePerm))
 
 	return *chosenPost
 }
