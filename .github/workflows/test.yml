@@ -24,4 +24,15 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: './go.mod'
-      - run: go test ./...
+      - run: |
+          go test \
+            -coverpkg=github.com/lauravuo/vegaanibotti/... \
+            -coverprofile=coverage.txt  \
+            -covermode=atomic \
+            ./...
+      - name: upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.txt
+          fail_ci_if_error: ${{ github.ref_name != 'main' }}
+          verbose: true
