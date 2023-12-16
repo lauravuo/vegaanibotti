@@ -1,4 +1,4 @@
-package my_http
+package myhttp
 
 import (
 	"bytes"
@@ -40,7 +40,8 @@ func DoGetRequest(path, authHeader string) (data []byte, err error) {
 
 	if res.StatusCode != http.StatusOK {
 		slog.Warn("HTTP request not OK", "status", res.StatusCode)
-		return nil, fmt.Errorf("Encountered error %d", res.StatusCode)
+
+		return nil, fmt.Errorf("error doing request %d %w", res.StatusCode, err)
 	}
 
 	data, err = io.ReadAll(res.Body)
@@ -77,12 +78,12 @@ func DoPostRequest(path string, values url.Values, authHeader string) (data []by
 func DoJSONRequest(path, method string, values interface{}, authHeader string) ([]byte, error) {
 	payload, err := json.Marshal(values)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error marshaling %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(context.TODO(), method, path, bytes.NewBuffer(payload))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error with new request %w", err)
 	}
 
 	req.Header.Set("Authorization", authHeader)
@@ -90,16 +91,18 @@ func DoJSONRequest(path, method string, values interface{}, authHeader string) (
 
 	res, err := getClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error doing request %w", err)
 	}
 	defer res.Body.Close()
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
+
+		return nil, fmt.Errorf("error reading body %w", err)
 	}
 
 	log.Println("JSON request response: ", string(data))
 
-	return data, err
+	return data, nil
 }
