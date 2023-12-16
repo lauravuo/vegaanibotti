@@ -32,10 +32,8 @@ func TestPostToMastodon(t *testing.T) {
 	// Call the function to be tested
 	m := &bot.Mastodon{Client: mastodonClient}
 	err := m.PostToMastodon(post)
-
 	// Assert that there is no error
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
-
 }

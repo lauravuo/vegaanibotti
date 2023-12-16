@@ -17,6 +17,7 @@ func main() {
 		"title", chosenPost.Title,
 		"description", chosenPost.Description,
 		"url", chosenPost.URL)
+
 	m := bot.InitMastodon()
 	try.To(m.PostToMastodon(&chosenPost))
 }
