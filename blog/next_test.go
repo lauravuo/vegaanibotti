@@ -58,5 +58,4 @@ func TestChooseNextPost(t *testing.T) {
 	if string(contents) != expected {
 		t.Errorf("Mismatch with expected ids %s (%s)", string(contents), expected)
 	}
-
 }
