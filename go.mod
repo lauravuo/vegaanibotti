@@ -7,8 +7,7 @@ toolchain go1.21.0
 require (
 	github.com/lainio/err2 v0.9.41
 	github.com/mattn/go-mastodon v0.0.6
-	github.com/pkg/errors v0.9.1
-	golang.org/x/net v0.15.0
+	golang.org/x/net v0.17.0
 )
 
 require (
