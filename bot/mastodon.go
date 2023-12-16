@@ -11,14 +11,27 @@ import (
 	"github.com/mattn/go-mastodon"
 )
 
-func PostToMastodon(post *blog.Post) error {
-	client := mastodon.NewClient(&mastodon.Config{
-		Server:       os.Getenv("MASTODON_SERVER"),
-		ClientID:     os.Getenv("MASTODON_CLIENT_ID"),
-		ClientSecret: os.Getenv("MASTODON_SECRET_KEY"),
-		AccessToken:  os.Getenv("MASTODON_ACCESS_TOKEN"),
-	})
-	status := try.To1(client.PostStatus(context.Background(), &mastodon.Toot{
+type MastodonClient interface {
+	PostStatus(ctx context.Context, toot *mastodon.Toot) (*mastodon.Status, error)
+}
+
+type Mastodon struct {
+	Client MastodonClient
+}
+
+func InitMastodon() *Mastodon {
+	return &Mastodon{
+		Client: mastodon.NewClient(&mastodon.Config{
+			Server:       os.Getenv("MASTODON_SERVER"),
+			ClientID:     os.Getenv("MASTODON_CLIENT_ID"),
+			ClientSecret: os.Getenv("MASTODON_SECRET_KEY"),
+			AccessToken:  os.Getenv("MASTODON_ACCESS_TOKEN"),
+		}),
+	}
+}
+
+func (m *Mastodon) PostToMastodon(post *blog.Post) error {
+	status := try.To1(m.Client.PostStatus(context.Background(), &mastodon.Toot{
 		Status: post.Title + "\n\n" +
 			post.Description + "\n\n" +
 			post.URL + "\n\n" +
