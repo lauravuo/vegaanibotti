@@ -26,20 +26,20 @@ type Post struct {
 
 const classStr = "class"
 
-func getTitleAndURL(z *html.Tokenizer, attrKey, attrValue string) (string, string) {
+func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
 	if attrKey == classStr && attrValue == "entry-title" {
-		_ = z.Next() // a-tag
-		_, moreAttr := z.TagName()
+		_ = tokenizer.Next() // a-tag
+		_, moreAttr := tokenizer.TagName()
 
 		var attrKeyBytes, attrValueBytes []byte
 
 		for moreAttr {
-			attrKeyBytes, attrValueBytes, moreAttr = z.TagAttr()
+			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
 			if string(attrKeyBytes) == "href" {
-				url := string(attrValueBytes)
-				_ = z.Next() // a value
+				url = string(attrValueBytes)
+				_ = tokenizer.Next() // a value
 
-				return z.Token().Data, url
+				return tokenizer.Token().Data, url
 			}
 		}
 	}
@@ -51,105 +51,141 @@ func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
 	if attrKey == classStr && attrValue == "entry-summary" {
 		_ = z.Next() // p-tag
 		_ = z.Next() // a value
-		return string(z.Token().Data)
+
+		return z.Token().Data
 	}
+
 	return ""
 }
 
-func getID(z *html.Tokenizer, attrKey, attrValue string) int64 {
+func getID(attrKey, attrValue string) int64 {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "teaser post-") {
 		parts := strings.Split(attrValue, " ")
 		strID, _ := strings.CutPrefix(parts[1], "post-")
+
 		return try.To1(strconv.ParseInt(strID, 10, 64))
 	}
+
 	return 0
 }
 
-func loadExistingPosts(recipesFilePath string) ([]Post, int64) {
+func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
 	// create file if it does not exist
 	if _, err := os.Stat(recipesFilePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(recipesFilePath, []byte("[]"), 0644))
+		try.To(os.WriteFile(recipesFilePath, []byte("[]"), writePerm))
 	}
 
 	// read existing posts
-	posts := make([]Post, 0)
 	fileContents := try.To1(os.ReadFile(recipesFilePath))
 	try.To(json.Unmarshal(fileContents, &posts))
-	var maxID int64
+
 	if len(posts) > 0 {
 		maxID = posts[0].ID
 	}
+
 	slog.Info("Existing posts", "count", len(posts), "maximum ID", maxID)
+
 	return posts, maxID
+}
+
+func getAttributes(
+	tokenizer *html.Tokenizer,
+	moreAttr bool,
+	maxID int64,
+) (id int64, itemTitle, itemURL, description string, existingFound bool) {
+	var attrKey, attrValue []byte
+
+	var itemID int64
+
+	for moreAttr {
+		attrKey, attrValue, moreAttr = tokenizer.TagAttr()
+
+		attrKeyStr := string(attrKey)
+		attrValueStr := string(attrValue)
+
+		if id := getID(attrKeyStr, attrValueStr); id != 0 {
+			slog.Info("Handling post", "id", id)
+			itemID = id
+
+			if itemID <= maxID {
+				existingFound = true
+
+				break
+			}
+		}
+
+		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
+			itemTitle = title
+			itemURL = url
+		}
+
+		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
+			description = desc
+
+			break
+		}
+	}
+
+	return itemID, itemTitle, itemURL, description, existingFound
 }
 
 func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
 ) ([]Post, error) {
-
 	posts, maxID := loadExistingPosts(recipesFilePath)
 	existingFound := false
 
 	url := "https://chocochili.net/luokka/paaruoat/page/%d/"
 	index := 1
-	var itemID int64
-	var itemTitle, itemURL string
-	var attrKey, attrValue []byte
-	added := make(map[int64]bool)
-	for !existingFound {
-		fetchUrl := fmt.Sprintf(url, index)
-		slog.Info("Fetching URL", "url", fetchUrl)
 
-		data, err := httpGetter(fetchUrl, "")
+	added := make(map[int64]bool)
+
+	for !existingFound {
+		fetchURL := fmt.Sprintf(url, index)
+
+		slog.Info("Fetching URL", "url", fetchURL)
+
+		data, err := httpGetter(fetchURL, "")
 		if err != nil {
 			slog.Info("Stopped fetching", "count", index-1)
+
 			break
 		}
-		z := html.NewTokenizer(bytes.NewReader(data))
+
+		tokenizer := html.NewTokenizer(bytes.NewReader(data))
 		for !existingFound {
-			tt := z.Next()
+			tt := tokenizer.Next()
+
 			if tt == html.ErrorToken {
 				break
 			}
 
-			_, moreAttr := z.TagName()
-			for moreAttr {
-				attrKey, attrValue, moreAttr = z.TagAttr()
-				attrKeyStr := string(attrKey)
-				attrValueStr := string(attrValue)
-				if id := getID(z, attrKeyStr, attrValueStr); id != 0 {
-					slog.Info("Handling post", "id", id)
-					itemID = id
-					if itemID <= maxID {
-						existingFound = true
-						break
-					}
-				}
-				if title, url := getTitleAndURL(z, attrKeyStr, attrValueStr); title != "" {
-					itemTitle = title
-					itemURL = url
-				}
-				if desc := getDescription(z, attrKeyStr, attrValueStr); desc != "" {
-					if _, ok := added[itemID]; !ok {
-						posts = append(posts, Post{
-							ID:          itemID,
-							Title:       itemTitle,
-							Description: desc,
-							URL:         itemURL,
-							Added:       true,
-						})
-						added[itemID] = true
-					}
+			_, moreAttr := tokenizer.TagName()
+
+			itemID, itemTitle, itemURL, description, existingFound := getAttributes(tokenizer, moreAttr, maxID)
+			if !existingFound && description != "" {
+				if _, ok := added[itemID]; !ok {
+					posts = append(posts, Post{
+						ID:          itemID,
+						Title:       itemTitle,
+						Description: description,
+						URL:         itemURL,
+						Added:       true,
+					})
+
+					added[itemID] = true
 				}
 			}
 		}
-		index += 1
+
+		index++
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
 		return posts[i].ID > posts[j].ID
 	})
-	try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), 0644))
+	try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), writePerm))
+
 	return posts, nil
 }
