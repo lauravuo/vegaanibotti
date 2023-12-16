@@ -14,8 +14,6 @@ func TestChooseNextPost(t *testing.T) {
 	t.Parallel()
 
 	// test when empty used ids
-	try.To(os.WriteFile(usedIDsPath, []byte("[]"), blog.WritePerm))
-
 	posts := []blog.Post{
 		{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
 	}
