@@ -35,7 +35,7 @@ jobs:
           mkdir -p coverage
           go tool covdata textfmt -i=coverage -o coverage-run.txt
         env:
-          GOCOVERDIR: "./coverage"
+          GOCOVERDIR: "$PWD/coverage"
       - name: upload coverage
         uses: codecov/codecov-action@v3
         env:
