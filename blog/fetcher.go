@@ -131,6 +131,7 @@ func getPost(tokenizer *html.Tokenizer, post *Post) {
 func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
+	previewOnly bool,
 ) ([]Post, error) {
 	posts, maxID := loadExistingPosts(recipesFilePath)
 	existingFound := false
@@ -175,6 +176,14 @@ func FetchNewPosts(
 						post.Added = true
 						posts = append(posts, *post)
 
+						slog.Info("Added new post",
+							"ID", post.ID,
+							"Title", post.Title,
+							"Description", post.Description,
+							"URL", post.URL,
+							"Hashtags", post.Hashtags,
+						)
+
 						added[post.ID] = true
 						post = &Post{}
 					}
@@ -188,7 +197,10 @@ func FetchNewPosts(
 	sort.Slice(posts, func(i, j int) bool {
 		return posts[i].ID > posts[j].ID
 	})
-	try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), WritePerm))
+
+	if !previewOnly {
+		try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), WritePerm))
+	}
 
 	return posts, nil
 }

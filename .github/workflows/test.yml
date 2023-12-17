@@ -30,11 +30,16 @@ jobs:
             -coverprofile=coverage.txt  \
             -covermode=atomic \
             ./...
+      - run: |
+          go run -cover . --fetch
+          go tool covdata textfmt -i=coverage -o coverage-run.txt
+        env:
+          GOCOVERDIR: "./coverage"
       - name: upload coverage
         uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: ./coverage.txt
+          files: ./coverage.txt,coverage-run.txt
           fail_ci_if_error: ${{ github.ref_name != 'main' }}
           verbose: true
