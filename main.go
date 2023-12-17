@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"os"
 
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
@@ -10,13 +11,25 @@ import (
 )
 
 func main() {
-	posts := try.To1(blog.FetchNewPosts(blog.RecipesPath, myhttp.DoGetRequest))
-	chosenPost := blog.ChooseNextPost(posts, blog.UsedIDsPath)
-	slog.Info("Chosen post",
-		"title", chosenPost.Title,
-		"description", chosenPost.Description,
-		"url", chosenPost.URL)
+	fetchOnly := false
+	if len(os.Args) > 1 {
+		fetchOnly = os.Args[1] == "--fetch"
+	}
 
-	m := bot.InitMastodon()
-	try.To(m.PostToMastodon(&chosenPost))
+	posts := try.To1(blog.FetchNewPosts(
+		blog.RecipesPath,
+		myhttp.DoGetRequest,
+		fetchOnly,
+	))
+
+	if !fetchOnly {
+		chosenPost := blog.ChooseNextPost(posts, blog.UsedIDsPath)
+		slog.Info("Chosen post",
+			"title", chosenPost.Title,
+			"description", chosenPost.Description,
+			"url", chosenPost.URL)
+
+		m := bot.InitMastodon()
+		try.To(m.PostToMastodon(&chosenPost))
+	}
 }
