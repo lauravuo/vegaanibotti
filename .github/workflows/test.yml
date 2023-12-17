@@ -31,11 +31,9 @@ jobs:
             -covermode=atomic \
             ./...
       - run: |
-          go run -cover . --fetch
           mkdir -p coverage
+          GOCOVERDIR=coverage go run -cover . --fetch
           go tool covdata textfmt -i=coverage -o coverage-run.txt
-        env:
-          GOCOVERDIR: "$PWD/coverage"
       - name: upload coverage
         uses: codecov/codecov-action@v3
         env:
