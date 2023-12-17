@@ -62,12 +62,13 @@ func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
 	return ""
 }
 
-func getID(attrKey, attrValue string) (int64, []string) {
+func getID(attrKey, attrValue string) (id int64, tags []string) {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "teaser post-") {
 		parts := strings.Split(attrValue, " ")
 		strID, _ := strings.CutPrefix(parts[1], "post-")
 
 		tags := make([]string, 0)
+
 		for _, className := range parts {
 			if strings.HasPrefix(className, "tag-") {
 				tag, _ := strings.CutPrefix(className, "tag-")
