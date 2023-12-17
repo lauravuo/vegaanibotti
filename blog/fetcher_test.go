@@ -50,7 +50,33 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Expected success, got: %s", err)
 	}
 
-	if len(posts) == 0 {
-		t.Errorf("Expected to find posts, got 0 posts.")
+	if len(posts) != 10 {
+		t.Errorf("Expected to find 10 posts, got %d posts.", len(posts))
+	}
+
+	post := posts[0]
+	if post.ID != 19236 {
+		t.Errorf("Mismatch with post ID")
+	}
+
+	if post.Title != "Helppo vegemureke" {
+		t.Errorf("Mismatch with post title")
+	}
+
+	if post.URL != "https://chocochili.net/2023/12/helppo-vegemureke/" {
+		t.Errorf("Mismatch with post url")
+	}
+
+	if post.Description != "Vegaaninen mureke sopii myös joulupöytään!" {
+		t.Errorf("Mismatch with post desc")
+	}
+
+	if len(post.Hashtags) != 6 {
+		t.Errorf("Mismatch with post hashtags")
+	}
+
+	post2 := posts[1]
+	if post2.Title == "" || post2.Title == post.Title {
+		t.Errorf("Invalid second post")
 	}
 }

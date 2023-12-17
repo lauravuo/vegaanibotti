@@ -24,6 +24,10 @@ type Post struct {
 	Added       bool `json:"-"`
 }
 
+func (p *Post) IsValid() bool {
+	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
+}
+
 const classStr = "class"
 
 func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
@@ -58,15 +62,23 @@ func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
 	return ""
 }
 
-func getID(attrKey, attrValue string) int64 {
+func getID(attrKey, attrValue string) (int64, []string) {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "teaser post-") {
 		parts := strings.Split(attrValue, " ")
 		strID, _ := strings.CutPrefix(parts[1], "post-")
 
-		return try.To1(strconv.ParseInt(strID, 10, 64))
+		tags := make([]string, 0)
+		for _, className := range parts {
+			if strings.HasPrefix(className, "tag-") {
+				tag, _ := strings.CutPrefix(className, "tag-")
+				tags = append(tags, tag)
+			}
+		}
+
+		return try.To1(strconv.ParseInt(strID, 10, 64)), tags
 	}
 
-	return 0
+	return 0, []string{}
 }
 
 func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
@@ -88,14 +100,10 @@ func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
 	return posts, maxID
 }
 
-func getAttributes(
-	tokenizer *html.Tokenizer,
-	moreAttr bool,
-	maxID int64,
-) (id int64, itemTitle, itemURL, description string, existingFound bool) {
-	var attrKey, attrValue []byte
+func getPost(tokenizer *html.Tokenizer, post *Post) {
+	_, moreAttr := tokenizer.TagName()
 
-	var itemID int64
+	var attrKey, attrValue []byte
 
 	for moreAttr {
 		attrKey, attrValue, moreAttr = tokenizer.TagAttr()
@@ -103,30 +111,20 @@ func getAttributes(
 		attrKeyStr := string(attrKey)
 		attrValueStr := string(attrValue)
 
-		if id := getID(attrKeyStr, attrValueStr); id != 0 {
-			slog.Info("Handling post", "id", id)
-			itemID = id
-
-			if itemID <= maxID {
-				existingFound = true
-
-				break
-			}
+		if id, tagNames := getID(attrKeyStr, attrValueStr); id != 0 {
+			post.ID = id
+			post.Hashtags = tagNames
 		}
 
 		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
-			itemTitle = title
-			itemURL = url
+			post.Title = title
+			post.URL = url
 		}
 
 		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
-			description = desc
-
-			break
+			post.Description = desc
 		}
 	}
-
-	return itemID, itemTitle, itemURL, description, existingFound
 }
 
 func FetchNewPosts(
@@ -140,6 +138,8 @@ func FetchNewPosts(
 	index := 1
 
 	added := make(map[int64]bool)
+
+	post := &Post{}
 
 	for !existingFound {
 		fetchURL := fmt.Sprintf(url, index)
@@ -161,20 +161,22 @@ func FetchNewPosts(
 				break
 			}
 
-			_, moreAttr := tokenizer.TagName()
+			getPost(tokenizer, post)
 
-			itemID, itemTitle, itemURL, description, existingFound := getAttributes(tokenizer, moreAttr, maxID)
-			if !existingFound && description != "" {
-				if _, ok := added[itemID]; !ok {
-					posts = append(posts, Post{
-						ID:          itemID,
-						Title:       itemTitle,
-						Description: description,
-						URL:         itemURL,
-						Added:       true,
-					})
+			if post.IsValid() {
+				existingFound = post.ID <= maxID
+				if !existingFound {
+					if _, ok := added[post.ID]; !ok {
+						tags := post.Hashtags
+						post.Hashtags = make([]string, 0)
+						post.Hashtags = append(post.Hashtags, []string{"chocochili", "vegaani", "vegaaniresepti"}...)
+						post.Hashtags = append(post.Hashtags, tags...)
+						post.Added = true
+						posts = append(posts, *post)
 
-					added[itemID] = true
+						added[post.ID] = true
+						post = &Post{}
+					}
 				}
 			}
 		}
