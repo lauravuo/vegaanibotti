@@ -28,6 +28,13 @@ func (p *Post) IsValid() bool {
 	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
 }
 
+func (p *Post) Summary() string {
+	return p.Title + "\n\n" +
+		p.Description + "\n\n" +
+		p.URL + "\n\n" +
+		"#" + strings.Join(p.Hashtags, " #")
+}
+
 const classStr = "class"
 
 func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
