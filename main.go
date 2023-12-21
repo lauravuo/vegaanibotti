@@ -31,5 +31,8 @@ func main() {
 
 		m := bot.InitMastodon()
 		try.To(m.PostToMastodon(&chosenPost))
+
+		x := bot.InitX()
+		try.To(x.PostToX(&chosenPost))
 	}
 }

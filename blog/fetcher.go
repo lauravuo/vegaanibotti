@@ -28,6 +28,15 @@ func (p *Post) IsValid() bool {
 	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
 }
 
+func (p *Post) Summary() string {
+	const lineFeed = "\n\n"
+
+	return p.Title + lineFeed +
+		p.Description + lineFeed +
+		p.URL + lineFeed +
+		"#" + strings.Join(p.Hashtags, " #")
+}
+
 const classStr = "class"
 
 func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
