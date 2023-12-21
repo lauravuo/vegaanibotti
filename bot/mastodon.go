@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"strings"
 
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
@@ -32,10 +31,7 @@ func InitMastodon() *Mastodon {
 
 func (m *Mastodon) PostToMastodon(post *blog.Post) error {
 	status := try.To1(m.Client.PostStatus(context.Background(), &mastodon.Toot{
-		Status: post.Title + "\n\n" +
-			post.Description + "\n\n" +
-			post.URL + "\n\n" +
-			"#" + strings.Join(post.Hashtags, " #"),
+		Status:   post.Summary(),
 		Language: "fi",
 	}))
 	slog.Info("post sent", "status", status.ID)

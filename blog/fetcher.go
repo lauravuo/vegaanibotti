@@ -29,9 +29,11 @@ func (p *Post) IsValid() bool {
 }
 
 func (p *Post) Summary() string {
-	return p.Title + "\n\n" +
-		p.Description + "\n\n" +
-		p.URL + "\n\n" +
+	const lineFeed = "\n\n"
+
+	return p.Title + lineFeed +
+		p.Description + lineFeed +
+		p.URL + lineFeed +
 		"#" + strings.Join(p.Hashtags, " #")
 }
 

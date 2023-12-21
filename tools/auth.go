@@ -6,25 +6,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/lauravuo/vegaanibotti/myhttp"
 	"github.com/pkg/browser"
 )
 
 type AuthResponse struct {
+	//nolint:tagliatelle
 	AccessToken string `json:"access_token"`
 }
 
-func fetchUserToken() string {
-	const (
-		redirectURL = "http://localhost:4321"
-		xLoginURL   = "https://twitter.com/i/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=challenge&code_challenge_method=plain"
-	)
+const (
+	redirectURL = "http://localhost:4321"
+	//nolint:lll
+	xLoginURL = "https://twitter.com/i/oauth2/authorize?response_type=code&client_id=%s&redirect_uri=%s&scope=%s&state=%s&code_challenge=challenge&code_challenge_method=plain"
+)
 
+//nolint:cyclop
+func fetchUserToken() string {
 	var (
 		clientID     = os.Getenv("X_CLIENT_ID")
 		clientSecret = os.Getenv("X_CLIENT_SECRET")
@@ -32,12 +37,13 @@ func fetchUserToken() string {
 	)
 
 	if clientID == "" && clientSecret == "" {
-		panic(fmt.Errorf("X client ID and secret missing"))
+		panic("X client ID and secret missing")
 	}
 
 	// authorization code - received in callback
 	code := ""
 	// local state parameter for cross-site request forgery prevention
+	//nolint:gosec
 	state := fmt.Sprint(rand.Int())
 	// scope of the access
 	scope := url.QueryEscape("offline.access tweet.write tweet.read users.read")
@@ -48,27 +54,26 @@ func fetchUserToken() string {
 	messages := make(chan bool)
 
 	// callback handler, redirect from authentication is handled here
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.URL.Query())
+	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		// check that the state parameter matches
-		if s, ok := r.URL.Query()["state"]; ok && s[0] == state {
+		if s, ok := request.URL.Query()["state"]; ok && s[0] == state {
 			// code is received as query parameter
-			if codes, ok := r.URL.Query()["code"]; ok && len(codes) == 1 {
+			if codes, ok := request.URL.Query()["code"]; ok && len(codes) == 1 {
 				// save code and signal shutdown
 				code = codes[0]
 				messages <- true
 			}
 		}
 		// redirect user's browser to spotify home page
-		http.Redirect(w, r, "https://www.x.com/", http.StatusSeeOther)
+		http.Redirect(writer, request, "https://www.x.com/", http.StatusSeeOther)
 	})
 
 	// open user's browser to login page
 	if err := browser.OpenURL(path); err != nil {
-		panic(fmt.Errorf("failed to open browser for authentication %s", err.Error()))
+		panic(fmt.Errorf("failed to open browser for authentication %w", err))
 	}
 
-	server := &http.Server{Addr: ":4321"}
+	server := &http.Server{Addr: ":4321", ReadHeaderTimeout: 2 * time.Second}
 	// go routine for shutting down the server
 	go func() {
 		okToClose := <-messages
@@ -92,18 +97,20 @@ func fetchUserToken() string {
 		params,
 		authHeader,
 	)
+
 	if err == nil {
 		response := AuthResponse{}
-		fmt.Println(string(data))
 		if err = json.Unmarshal(data, &response); err == nil {
 			// happy end: token parsed successfully
+			slog.Info("Refresh token received", "response", string(data))
+
 			return response.AccessToken
 		}
 	}
-	panic(fmt.Errorf("unable to acquire X user token"))
+
+	panic("unable to acquire X user token")
 }
 
 func main() {
-	token := fetchUserToken()
-	fmt.Println(token)
+	_ = fetchUserToken()
 }

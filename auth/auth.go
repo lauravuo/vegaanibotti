@@ -9,7 +9,8 @@ import (
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
-type AuthResponse struct {
+type Response struct {
+	//nolint:tagliatelle
 	AccessToken string `json:"access_token"`
 }
 
@@ -25,13 +26,14 @@ func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) str
 		params,
 		authHeader,
 	)
+
 	if err == nil {
-		response := AuthResponse{}
-		//fmt.Println(string(data))
+		response := Response{}
 		if err = json.Unmarshal(data, &response); err == nil {
 			// happy end: token parsed successfully
 			return response.AccessToken
 		}
 	}
+
 	return ""
 }

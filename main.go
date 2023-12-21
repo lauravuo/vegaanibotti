@@ -35,5 +35,4 @@ func main() {
 		x := bot.InitX()
 		try.To(x.PostToX(&chosenPost))
 	}
-
 }
