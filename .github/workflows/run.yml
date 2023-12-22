@@ -10,9 +10,12 @@ jobs:
     name: send status update
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: setup
         uses: actions/setup-go@v5
         with:
@@ -31,5 +34,11 @@ jobs:
         run: |
           git config --global user.email "gh-actions"
           git config --global user.name "gh-actions"
+          branch="store-changes-$(date +%s)"
+          git checkout -b $branch
           git commit -a -m "Store changes to data."
-          git push
+          git push --set-upstream origin $branch
+          url=$(gh pr create --fill)
+          gh pr merge --auto --merge "$url"
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
