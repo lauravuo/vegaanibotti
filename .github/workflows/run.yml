@@ -33,9 +33,10 @@ jobs:
         run: |
           git config --global user.email "gh-actions"
           git config --global user.name "gh-actions"
-          git checkout -b store-changes
+          branch="store-changes-$(date +%s)"
+          git checkout -b $branch
           git commit -a -m "Store changes to data."
-          git push --set-upstream origin store-changes
+          git push --set-upstream origin $branch
           url=$(gh pr create --fill)
           gh pr merge --auto --merge "$url"
         env:
