@@ -41,4 +41,4 @@ jobs:
           url=$(gh pr create --fill)
           gh pr merge --auto --merge "$url"
         env:
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{secrets.PAT}}
