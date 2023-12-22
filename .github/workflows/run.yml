@@ -36,3 +36,5 @@ jobs:
           git push --set-upstream origin store-changes
           url=$(gh pr create --fill)
           gh pr merge --auto --merge "$url"
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
