@@ -22,7 +22,9 @@ jobs:
         with:
           go-version-file: './go.mod'
       - name: run app
-        run: go run .
+        run: |
+          go run .
+          gh secret set X_REFRESH_TOKEN --body "$NEW_X_REFRESH_TOKEN"
         env:
           MASTODON_SERVER: ${{ secrets.MASTODON_SERVER }}
           MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
@@ -31,6 +33,7 @@ jobs:
           X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
           X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
           X_REFRESH_TOKEN: ${{ secrets.X_REFRESH_TOKEN }}
+          GH_TOKEN: ${{secrets.PAT}}
       - name: commit
         run: |
           git config --global user.email "gh-actions"
