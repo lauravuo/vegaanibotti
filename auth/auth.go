@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
 type Response struct {
 	//nolint:tagliatelle
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) string {
@@ -31,6 +33,8 @@ func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) str
 		response := Response{}
 		if err = json.Unmarshal(data, &response); err == nil {
 			// happy end: token parsed successfully
+			os.Setenv("NEW_X_REFRESH_TOKEN", response.RefreshToken)
+
 			return response.AccessToken
 		}
 	}
