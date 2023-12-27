@@ -12,7 +12,8 @@ import (
 
 type Response struct {
 	//nolint:tagliatelle
-	AccessToken  string `json:"access_token"`
+	AccessToken string `json:"access_token"`
+	//nolint:tagliatelle
 	RefreshToken string `json:"refresh_token"`
 }
 
