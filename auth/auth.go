@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/lainio/err2/try"
+	"github.com/lauravuo/vegaanibotti/blog"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -34,7 +36,10 @@ func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) str
 		response := Response{}
 		if err = json.Unmarshal(data, &response); err == nil {
 			// happy end: token parsed successfully
-			os.Setenv("NEW_X_REFRESH_TOKEN", response.RefreshToken)
+			try.To(os.WriteFile(
+				"./data/.envrc",
+				[]byte("export NEW_X_REFRESH_TOKEN="+response.RefreshToken),
+				blog.WritePerm))
 
 			return response.AccessToken
 		}
