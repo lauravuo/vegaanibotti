@@ -24,6 +24,7 @@ jobs:
       - name: run app
         run: |
           go run .
+          source ./data/.envrc
           gh secret set X_REFRESH_TOKEN --body "$NEW_X_REFRESH_TOKEN"
         env:
           MASTODON_SERVER: ${{ secrets.MASTODON_SERVER }}
