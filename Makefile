@@ -6,3 +6,6 @@ lint:
 
 test:
 	go test ./...
+
+fetch:
+	go run . --fetch

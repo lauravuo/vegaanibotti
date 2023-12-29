@@ -1,7 +1,7 @@
 package cc
 
-const DataPath = "./data"
+import "github.com/lauravuo/vegaanibotti/blog/base"
 
-const RecipesPath = DataPath + "/recipes.json"
+const RecipesPath = base.DataPath + "/cc/recipes.json"
 
-const UsedIDsPath = DataPath + "/used.json"
+const UsedIDsPath = base.DataPath + "/cc/used.json"

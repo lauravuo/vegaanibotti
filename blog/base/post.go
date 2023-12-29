@@ -2,7 +2,10 @@ package base
 
 import "strings"
 
-const WritePerm = 0o600
+const (
+	WritePerm = 0o600
+	DataPath  = "./data"
+)
 
 const lineFeed = "\n\n"
 
