@@ -15,6 +15,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+const lineFeed = "\n\n"
+
 type Post struct {
 	ID          int64
 	Title       string
@@ -29,10 +31,21 @@ func (p *Post) IsValid() bool {
 }
 
 func (p *Post) Summary() string {
-	const lineFeed = "\n\n"
-
 	return p.Title + lineFeed +
 		p.Description + lineFeed +
+		p.URL + lineFeed +
+		"#" + strings.Join(p.Hashtags, " #")
+}
+
+func (p *Post) ShortSummary() string {
+	const shortSummaryMaxLen = 280
+
+	summary := p.Summary()
+	if len(summary) < shortSummaryMaxLen {
+		return summary
+	}
+
+	return p.Title + lineFeed +
 		p.URL + lineFeed +
 		"#" + strings.Join(p.Hashtags, " #")
 }

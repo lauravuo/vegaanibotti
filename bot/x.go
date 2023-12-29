@@ -29,7 +29,7 @@ func InitX() *X {
 
 func (x *X) PostToX(post *blog.Post) error {
 	data := make(map[string]any)
-	data["text"] = post.Summary()
+	data["text"] = post.ShortSummary()
 	status := try.To1(x.PostJSON(
 		"https://api.twitter.com/2/tweets",
 		"POST",
