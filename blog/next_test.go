@@ -6,6 +6,7 @@ import (
 
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
 const usedIDsPath = "./test_data/used.json"
@@ -14,7 +15,7 @@ func TestChooseNextPost(t *testing.T) {
 	t.Parallel()
 
 	// test when empty used ids
-	posts := []blog.Post{
+	posts := []base.Post{
 		{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
 	}
 	nextPost := blog.ChooseNextPost(posts, usedIDsPath)
@@ -24,13 +25,13 @@ func TestChooseNextPost(t *testing.T) {
 	}
 
 	// test when one of the ids used
-	posts = []blog.Post{
+	posts = []base.Post{
 		{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
 
 		{ID: 2, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
 	}
 
-	try.To(os.WriteFile(usedIDsPath, []byte("[1]"), blog.WritePerm))
+	try.To(os.WriteFile(usedIDsPath, []byte("[1]"), base.WritePerm))
 
 	nextPost = blog.ChooseNextPost(posts, usedIDsPath)
 

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -39,7 +39,7 @@ func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) str
 			try.To(os.WriteFile(
 				"./data/.envrc",
 				[]byte("export NEW_X_REFRESH_TOKEN="+response.RefreshToken),
-				blog.WritePerm))
+				base.WritePerm))
 
 			return response.AccessToken
 		}

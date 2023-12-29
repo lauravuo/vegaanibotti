@@ -10,14 +10,13 @@ import (
 	"slices"
 
 	"github.com/lainio/err2/try"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-const WritePerm = 0o600
-
-func ChooseNextPost(posts []Post, usedIDsPath string) Post {
+func ChooseNextPost(posts []base.Post, usedIDsPath string) base.Post {
 	filePath := usedIDsPath
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(filePath, []byte("[]"), WritePerm))
+		try.To(os.WriteFile(filePath, []byte("[]"), base.WritePerm))
 	}
 
 	fileContents := try.To1(os.ReadFile(filePath))
@@ -36,7 +35,7 @@ func ChooseNextPost(posts []Post, usedIDsPath string) Post {
 	randomIndex := int(try.To1(rand.Int(rand.Reader, big.NewInt(count))).Int64())
 	slog.Info("Picking random post", "index", randomIndex)
 
-	var chosenPost *Post
+	var chosenPost *base.Post
 
 	filteredIndex := -1
 
@@ -54,7 +53,7 @@ func ChooseNextPost(posts []Post, usedIDsPath string) Post {
 
 	usedIDs = append(usedIDs, chosenPost.ID)
 
-	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), WritePerm))
+	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), base.WritePerm))
 
 	return *chosenPost
 }

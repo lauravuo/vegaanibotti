@@ -6,6 +6,7 @@ import (
 
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/cc"
 	"github.com/lauravuo/vegaanibotti/bot"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
@@ -16,7 +17,7 @@ func main() {
 		fetchOnly = os.Args[1] == "--fetch"
 	}
 
-	posts := try.To1(blog.FetchNewPosts(
+	posts := try.To1(cc.FetchNewPosts(
 		blog.RecipesPath,
 		myhttp.DoGetRequest,
 		fetchOnly,

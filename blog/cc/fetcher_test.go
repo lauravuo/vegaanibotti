@@ -1,4 +1,4 @@
-package blog_test
+package cc_test
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/cc"
 )
 
 const testDataPath = "./test_data/"
@@ -45,7 +45,7 @@ func TestMain(m *testing.M) {
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
-	posts, err := blog.FetchNewPosts("./test_data/recipes.json", getter, false)
+	posts, err := cc.FetchNewPosts("./test_data/recipes.json", getter, false)
 	if err != nil {
 		t.Errorf("Expected success, got: %s", err)
 	}

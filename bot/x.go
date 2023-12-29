@@ -6,7 +6,7 @@ import (
 
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/auth"
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -27,7 +27,7 @@ func InitX() *X {
 	}
 }
 
-func (x *X) PostToX(post *blog.Post) error {
+func (x *X) PostToX(post *base.Post) error {
 	data := make(map[string]any)
 	data["text"] = post.ShortSummary()
 	status := try.To1(x.PostJSON(

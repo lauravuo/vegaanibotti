@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/mattn/go-mastodon"
 )
 
@@ -29,7 +29,7 @@ func InitMastodon() *Mastodon {
 	}
 }
 
-func (m *Mastodon) PostToMastodon(post *blog.Post) error {
+func (m *Mastodon) PostToMastodon(post *base.Post) error {
 	status := try.To1(m.Client.PostStatus(context.Background(), &mastodon.Toot{
 		Status:   post.Summary(),
 		Language: "fi",
