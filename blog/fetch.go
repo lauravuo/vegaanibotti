@@ -1,6 +1,7 @@
 package blog
 
 import (
+	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/blog/cc"
 	"github.com/lauravuo/vegaanibotti/myhttp"
@@ -8,9 +9,12 @@ import (
 
 func FetchNewPosts(
 	previewOnly bool,
-) ([]base.Post, error) {
-	return cc.FetchNewPosts(RecipesPath,
+) (base.Collection, error) {
+	collection := make(base.Collection)
+	collection["cc"] = try.To1(cc.FetchNewPosts(RecipesPath,
 		myhttp.DoGetRequest,
 		previewOnly,
-	)
+	))
+
+	return collection, nil
 }

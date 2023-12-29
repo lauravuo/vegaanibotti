@@ -13,7 +13,7 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-func ChooseNextPost(posts []base.Post, usedIDsPath string) base.Post {
+func ChooseNextPost(posts base.Collection, usedIDsPath string) base.Post {
 	filePath := usedIDsPath
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		try.To(os.WriteFile(filePath, []byte("[]"), base.WritePerm))
@@ -39,13 +39,13 @@ func ChooseNextPost(posts []base.Post, usedIDsPath string) base.Post {
 
 	filteredIndex := -1
 
-	for index, post := range posts {
+	for index, post := range posts["cc"] {
 		if !slices.Contains(usedIDs, post.ID) {
 			filteredIndex++
 		}
 
 		if filteredIndex == randomIndex {
-			chosenPost = &posts[index]
+			chosenPost = &posts["cc"][index]
 
 			break
 		}

@@ -1,0 +1,2 @@
+fumpt:
+	gofumpt -l -w .

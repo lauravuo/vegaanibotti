@@ -15,28 +15,37 @@ func TestChooseNextPost(t *testing.T) {
 	t.Parallel()
 
 	// test when empty used ids
-	posts := []base.Post{
-		{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
+	posts := base.Collection{
+		"cc": []base.Post{{
+			ID:          1,
+			Title:       "title",
+			Description: "description",
+			URL:         "https://example.com",
+			Hashtags:    []string{"food"},
+			Added:       true,
+		}},
 	}
 	nextPost := blog.ChooseNextPost(posts, usedIDsPath)
 
-	if nextPost.ID != posts[0].ID {
-		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts[0].ID)
+	if nextPost.ID != posts["cc"][0].ID {
+		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts["cc"][0].ID)
 	}
 
 	// test when one of the ids used
-	posts = []base.Post{
-		{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
+	posts = base.Collection{
+		"cc": []base.Post{
+			{ID: 1, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
 
-		{ID: 2, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
+			{ID: 2, Title: "title", Description: "description", URL: "https://example.com", Hashtags: []string{"food"}, Added: true},
+		},
 	}
 
 	try.To(os.WriteFile(usedIDsPath, []byte("[1]"), base.WritePerm))
 
 	nextPost = blog.ChooseNextPost(posts, usedIDsPath)
 
-	if nextPost.ID != posts[1].ID {
-		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts[0].ID)
+	if nextPost.ID != posts["cc"][1].ID {
+		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts["cc"][0].ID)
 	}
 
 	// test when all of the ids used
