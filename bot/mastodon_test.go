@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/bot"
 	"github.com/mattn/go-mastodon"
 )
@@ -22,7 +22,7 @@ func TestPostToMastodon(t *testing.T) {
 	mastodonClient := &MockMastodonClient{}
 
 	// Create a sample blog post
-	post := &blog.Post{
+	post := &base.Post{
 		Title:       "Test Title",
 		Description: "Test Description",
 		URL:         "http://example.com",

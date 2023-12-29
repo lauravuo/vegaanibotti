@@ -1,4 +1,4 @@
-package blog
+package cc
 
 import (
 	"bytes"
@@ -12,43 +12,9 @@ import (
 	"strings"
 
 	"github.com/lainio/err2/try"
+	"github.com/lauravuo/vegaanibotti/blog/base"
 	"golang.org/x/net/html"
 )
-
-const lineFeed = "\n\n"
-
-type Post struct {
-	ID          int64
-	Title       string
-	Description string
-	URL         string
-	Hashtags    []string
-	Added       bool `json:"-"`
-}
-
-func (p *Post) IsValid() bool {
-	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
-}
-
-func (p *Post) Summary() string {
-	return p.Title + lineFeed +
-		p.Description + lineFeed +
-		p.URL + lineFeed +
-		"#" + strings.Join(p.Hashtags, " #")
-}
-
-func (p *Post) ShortSummary() string {
-	const shortSummaryMaxLen = 280
-
-	summary := p.Summary()
-	if len(summary) < shortSummaryMaxLen {
-		return summary
-	}
-
-	return p.Title + lineFeed +
-		p.URL + lineFeed +
-		"#" + strings.Join(p.Hashtags, " #")
-}
 
 const classStr = "class"
 
@@ -104,10 +70,10 @@ func getID(attrKey, attrValue string) (id int64, tags []string) {
 	return 0, []string{}
 }
 
-func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
+func loadExistingPosts(recipesFilePath string) (posts []base.Post, maxID int64) {
 	// create file if it does not exist
 	if _, err := os.Stat(recipesFilePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(recipesFilePath, []byte("[]"), WritePerm))
+		try.To(os.WriteFile(recipesFilePath, []byte("[]"), base.WritePerm))
 	}
 
 	// read existing posts
@@ -123,7 +89,7 @@ func loadExistingPosts(recipesFilePath string) (posts []Post, maxID int64) {
 	return posts, maxID
 }
 
-func getPost(tokenizer *html.Tokenizer, post *Post) {
+func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 	_, moreAttr := tokenizer.TagName()
 
 	var attrKey, attrValue []byte
@@ -154,7 +120,7 @@ func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
 	previewOnly bool,
-) ([]Post, error) {
+) (base.RecipeBank, error) {
 	posts, maxID := loadExistingPosts(recipesFilePath)
 	existingFound := false
 
@@ -163,7 +129,7 @@ func FetchNewPosts(
 
 	added := make(map[int64]bool)
 
-	post := &Post{}
+	post := &base.Post{}
 
 	for !existingFound {
 		fetchURL := fmt.Sprintf(url, index)
@@ -207,7 +173,7 @@ func FetchNewPosts(
 						)
 
 						added[post.ID] = true
-						post = &Post{}
+						post = &base.Post{}
 					}
 				}
 			}
@@ -221,8 +187,11 @@ func FetchNewPosts(
 	})
 
 	if !previewOnly {
-		try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), WritePerm))
+		try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), base.WritePerm))
 	}
 
-	return posts, nil
+	return base.RecipeBank{
+		Posts:       posts,
+		UsedIDsPath: UsedIDsPath,
+	}, nil
 }

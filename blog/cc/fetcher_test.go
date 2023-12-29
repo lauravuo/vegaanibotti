@@ -1,4 +1,4 @@
-package blog_test
+package cc_test
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/vegaanibotti/blog"
+	"github.com/lauravuo/vegaanibotti/blog/cc"
 )
 
 const testDataPath = "./test_data/"
@@ -45,16 +45,16 @@ func TestMain(m *testing.M) {
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
-	posts, err := blog.FetchNewPosts("./test_data/recipes.json", getter, false)
+	recipes, err := cc.FetchNewPosts("./test_data/recipes.json", getter, false)
 	if err != nil {
 		t.Errorf("Expected success, got: %s", err)
 	}
 
-	if len(posts) != 10 {
-		t.Errorf("Expected to find 10 posts, got %d posts.", len(posts))
+	if len(recipes.Posts) != 10 {
+		t.Errorf("Expected to find 10 posts, got %d posts.", len(recipes.Posts))
 	}
 
-	post := posts[0]
+	post := recipes.Posts[0]
 	if post.ID != 19236 {
 		t.Errorf("Mismatch with post ID")
 	}
@@ -75,7 +75,7 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Mismatch with post hashtags")
 	}
 
-	post2 := posts[1]
+	post2 := recipes.Posts[1]
 	if post2.Title == "" || post2.Title == post.Title {
 		t.Errorf("Invalid second post")
 	}

@@ -7,7 +7,6 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
 	"github.com/lauravuo/vegaanibotti/bot"
-	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
 func main() {
@@ -17,13 +16,11 @@ func main() {
 	}
 
 	posts := try.To1(blog.FetchNewPosts(
-		blog.RecipesPath,
-		myhttp.DoGetRequest,
 		fetchOnly,
 	))
 
 	if !fetchOnly {
-		chosenPost := blog.ChooseNextPost(posts, blog.UsedIDsPath)
+		chosenPost := blog.ChooseNextPost(posts, blog.UsedBlogsIDsPath)
 		slog.Info("Chosen post",
 			"title", chosenPost.Title,
 			"description", chosenPost.Description,
