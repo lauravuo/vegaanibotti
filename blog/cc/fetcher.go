@@ -120,7 +120,7 @@ func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
 	previewOnly bool,
-) ([]base.Post, error) {
+) (base.RecipeBank, error) {
 	posts, maxID := loadExistingPosts(recipesFilePath)
 	existingFound := false
 
@@ -190,5 +190,8 @@ func FetchNewPosts(
 		try.To(os.WriteFile(recipesFilePath, try.To1(json.Marshal(posts)), base.WritePerm))
 	}
 
-	return posts, nil
+	return base.RecipeBank{
+		Posts:       posts,
+		UsedIDsPath: UsedIDsPath,
+	}, nil
 }

@@ -11,7 +11,8 @@ func FetchNewPosts(
 	previewOnly bool,
 ) (base.Collection, error) {
 	collection := make(base.Collection)
-	collection["cc"] = try.To1(cc.FetchNewPosts(RecipesPath,
+	collection["cc"] = try.To1(cc.FetchNewPosts(
+		cc.RecipesPath,
 		myhttp.DoGetRequest,
 		previewOnly,
 	))

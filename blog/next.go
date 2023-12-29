@@ -13,9 +13,10 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-func ChooseNextPost(posts base.Collection, usedIDsPath string) base.Post {
-	filePath := usedIDsPath
+func ChooseNextPost(posts base.Collection) base.Post {
+	filePath := posts["cc"].UsedIDsPath
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
+		slog.Info("Used ids file does not exist, creating...", "path", filePath)
 		try.To(os.WriteFile(filePath, []byte("[]"), base.WritePerm))
 	}
 
@@ -24,7 +25,9 @@ func ChooseNextPost(posts base.Collection, usedIDsPath string) base.Post {
 	var usedIDs []int64
 
 	try.To(json.Unmarshal(fileContents, &usedIDs))
-	count := int64(len(posts) - len(usedIDs))
+	count := int64(len(posts["cc"].Posts) - len(usedIDs))
+
+	slog.Debug("Unused ids", "count", count)
 
 	// all ids are used, reset
 	if count == 0 {
@@ -39,13 +42,13 @@ func ChooseNextPost(posts base.Collection, usedIDsPath string) base.Post {
 
 	filteredIndex := -1
 
-	for index, post := range posts["cc"] {
+	for index, post := range posts["cc"].Posts {
 		if !slices.Contains(usedIDs, post.ID) {
 			filteredIndex++
 		}
 
 		if filteredIndex == randomIndex {
-			chosenPost = &posts["cc"][index]
+			chosenPost = &posts["cc"].Posts[index]
 
 			break
 		}

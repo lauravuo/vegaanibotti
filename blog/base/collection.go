@@ -1,3 +1,8 @@
 package base
 
-type Collection map[string][]Post
+type RecipeBank struct {
+	Posts       []Post
+	UsedIDsPath string
+}
+
+type Collection map[string]RecipeBank
