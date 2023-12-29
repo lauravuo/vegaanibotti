@@ -20,7 +20,7 @@ func main() {
 	))
 
 	if !fetchOnly {
-		chosenPost := blog.ChooseNextPost(posts)
+		chosenPost := blog.ChooseNextPost(posts, blog.UsedBlogsIDsPath)
 		slog.Info("Chosen post",
 			"title", chosenPost.Title,
 			"description", chosenPost.Description,

@@ -13,8 +13,28 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-func ChooseNextPost(posts base.Collection) base.Post {
-	filePath := posts["cc"].UsedIDsPath
+const UsedBlogsIDsPath = base.DataPath + "/used.json"
+
+func getRandomIndex(filteredCount, totalCount int64, accept func(int) bool) int {
+	randomIndex := int(try.To1(rand.Int(rand.Reader, big.NewInt(filteredCount))).Int64())
+	filteredIndex := -1
+
+	for index := 0; index < int(totalCount); index++ {
+		if accept(index) {
+			filteredIndex++
+		}
+
+		if filteredIndex == randomIndex {
+			return index
+		}
+	}
+
+	return 0
+}
+
+func getUsedIDs[V int64 | string](filePath string, totalCount int64) (usedIDs []V, filteredCount int64) {
+	slog.Debug("Fetching used ids", "path", filePath)
+
 	if _, err := os.Stat(filePath); errors.Is(err, os.ErrNotExist) {
 		slog.Info("Used ids file does not exist, creating...", "path", filePath)
 		try.To(os.WriteFile(filePath, []byte("[]"), base.WritePerm))
@@ -22,41 +42,50 @@ func ChooseNextPost(posts base.Collection) base.Post {
 
 	fileContents := try.To1(os.ReadFile(filePath))
 
-	var usedIDs []int64
-
 	try.To(json.Unmarshal(fileContents, &usedIDs))
-	count := int64(len(posts["cc"].Posts) - len(usedIDs))
 
-	slog.Debug("Unused ids", "count", count)
+	filteredCount = totalCount - int64(len(usedIDs))
 
 	// all ids are used, reset
-	if count == 0 {
-		count = int64(len(posts))
-		usedIDs = make([]int64, 0)
+	if filteredCount == 0 {
+		filteredCount = totalCount
+		usedIDs = make([]V, 0)
 	}
 
-	randomIndex := int(try.To1(rand.Int(rand.Reader, big.NewInt(count))).Int64())
-	slog.Info("Picking random post", "index", randomIndex)
+	return usedIDs, filteredCount
+}
 
-	var chosenPost *base.Post
+func ChooseNextPost(posts base.Collection, usedBlogsIDsPath string) base.Post {
+	usedBlogIDs, filteredBlogsCount := getUsedIDs[string](usedBlogsIDsPath, int64(len(posts)))
 
-	filteredIndex := -1
-
-	for index, post := range posts["cc"].Posts {
-		if !slices.Contains(usedIDs, post.ID) {
-			filteredIndex++
-		}
-
-		if filteredIndex == randomIndex {
-			chosenPost = &posts["cc"].Posts[index]
-
-			break
-		}
+	blogIDs := make([]string, 0)
+	for key := range posts {
+		blogIDs = append(blogIDs, key)
 	}
+
+	randomBlogIndex := getRandomIndex(filteredBlogsCount, int64(len(posts)), func(i int) bool {
+		return !slices.Contains(usedBlogIDs, blogIDs[i])
+	})
+	blogID := blogIDs[randomBlogIndex]
+
+	slog.Info("Choosing blog", "id", blogID)
+
+	usedIDs, filteredPostCount := getUsedIDs[int64](posts[blogID].UsedIDsPath, int64(len(posts[blogID].Posts)))
+
+	slog.Debug("Unused post ids", "count", filteredPostCount)
+
+	randomPostIndex := getRandomIndex(filteredPostCount, int64(len(posts[blogID].Posts)), func(i int) bool {
+		return !slices.Contains(usedIDs, posts[blogID].Posts[i].ID)
+	})
+
+	slog.Info("Picking random post", "index", randomPostIndex)
+	chosenPost := &posts[blogID].Posts[randomPostIndex]
 
 	usedIDs = append(usedIDs, chosenPost.ID)
+	usedBlogIDs = append(usedBlogIDs, blogID)
 
-	try.To(os.WriteFile(filePath, try.To1(json.Marshal(usedIDs)), base.WritePerm))
+	try.To(os.WriteFile(posts[blogID].UsedIDsPath, try.To1(json.Marshal(usedIDs)), base.WritePerm))
+	try.To(os.WriteFile(usedBlogsIDsPath, try.To1(json.Marshal(usedBlogIDs)), base.WritePerm))
 
 	return *chosenPost
 }

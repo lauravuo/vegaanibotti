@@ -9,12 +9,15 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-const usedIDsPath = "./test_data/used.json"
-
-const testDataPath = "./test_data/"
+const (
+	testDataPath    = "./test_data"
+	usedBlogIDsPath = testDataPath + "/used.json"
+	usedIDsPath     = testDataPath + "/cc/used.json"
+	ccTestDataPath  = testDataPath + "/cc"
+)
 
 func setup() {
-	try.To(os.MkdirAll(testDataPath, 0o700))
+	try.To(os.MkdirAll(ccTestDataPath, 0o700))
 }
 
 func teardown() {
@@ -48,7 +51,7 @@ func TestChooseNextPost(t *testing.T) {
 			UsedIDsPath: usedIDsPath,
 		},
 	}
-	nextPost := blog.ChooseNextPost(posts)
+	nextPost := blog.ChooseNextPost(posts, usedBlogIDsPath)
 
 	if nextPost.ID != posts["cc"].Posts[0].ID {
 		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts["cc"].Posts[0].ID)
@@ -68,7 +71,7 @@ func TestChooseNextPost(t *testing.T) {
 
 	try.To(os.WriteFile(usedIDsPath, []byte("[1]"), base.WritePerm))
 
-	nextPost = blog.ChooseNextPost(posts)
+	nextPost = blog.ChooseNextPost(posts, usedBlogIDsPath)
 
 	if nextPost.ID != posts["cc"].Posts[1].ID {
 		t.Errorf("Mismatch with expected post id %d (%d)", nextPost.ID, posts["cc"].Posts[1].ID)
@@ -80,7 +83,7 @@ func TestChooseNextPost(t *testing.T) {
 		t.Errorf("Mismatch with expected ids %s", string(contents))
 	}
 
-	nextPost = blog.ChooseNextPost(posts)
+	nextPost = blog.ChooseNextPost(posts, usedBlogIDsPath)
 	expected := "[1]"
 
 	if nextPost.ID == 2 {
