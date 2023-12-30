@@ -33,10 +33,13 @@ type Recipe struct {
 }
 
 func (v *Recipe) ToPost() base.Post {
+	url := strings.Replace(v.Source.URL[0], "http://users.", "https://", 1)
+	url = strings.Replace(url, "https://users.", "https://", 1)
+
 	return base.Post{
 		ID:       int64(v.Source.ID[0]),
 		Title:    v.Source.Title[0],
-		URL:      strings.Replace(v.Source.URL[0], "http://users.", "https://", 1),
+		URL:      url,
 		Hashtags: []string{"vegaanihaaste", "vegaani", "vegaaniresepti"},
 	}
 }
