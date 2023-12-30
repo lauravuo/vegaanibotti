@@ -3,7 +3,6 @@ package cc
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -70,25 +69,6 @@ func getID(attrKey, attrValue string) (id int64, tags []string) {
 	return 0, []string{}
 }
 
-func loadExistingPosts(recipesFilePath string) (posts []base.Post, maxID int64) {
-	// create file if it does not exist
-	if _, err := os.Stat(recipesFilePath); errors.Is(err, os.ErrNotExist) {
-		try.To(os.WriteFile(recipesFilePath, []byte("[]"), base.WritePerm))
-	}
-
-	// read existing posts
-	fileContents := try.To1(os.ReadFile(recipesFilePath))
-	try.To(json.Unmarshal(fileContents, &posts))
-
-	if len(posts) > 0 {
-		maxID = posts[0].ID
-	}
-
-	slog.Info("Existing posts", "count", len(posts), "maximum ID", maxID)
-
-	return posts, maxID
-}
-
 func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 	_, moreAttr := tokenizer.TagName()
 
@@ -121,7 +101,7 @@ func FetchNewPosts(
 	httpGetter func(string, string) ([]byte, error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
-	posts, maxID := loadExistingPosts(recipesFilePath)
+	posts, maxID := base.LoadExistingPosts(recipesFilePath)
 	existingFound := false
 
 	url := "https://chocochili.net/luokka/paaruoat/page/%d/"

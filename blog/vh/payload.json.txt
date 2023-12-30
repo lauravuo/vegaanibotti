@@ -1,0 +1,2 @@
+{"preference":"results"}
+{"query":{"bool":{"must":[{"bool":{"must":[{"bool":{"must":[{"term":{"tag_name_string":"Pääruokia"}}]}}]}}]}},"size":40,"_source":{"includes":["*"],"excludes":[]},"aggs":{"tag_name_string":{"terms":{"field":"tag_name_string","size":100,"order":{"_key":"asc"}}}},"from":%d,"sort":[{"nid":{"order":"desc"}}]}

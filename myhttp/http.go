@@ -81,12 +81,19 @@ func DoJSONRequest(path, method string, values interface{}, authHeader string) (
 		return nil, fmt.Errorf("error marshaling %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(context.TODO(), method, path, bytes.NewBuffer(payload))
+	return DoJSONBytesRequest(path, method, payload, authHeader)
+}
+
+func DoJSONBytesRequest(path, method string, values []byte, authHeader string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(context.TODO(), method, path, bytes.NewBuffer(values))
 	if err != nil {
 		return nil, fmt.Errorf("error with new request %w", err)
 	}
 
-	req.Header.Set("Authorization", authHeader)
+	if authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	res, err := getClient().Do(req)
@@ -101,8 +108,6 @@ func DoJSONRequest(path, method string, values interface{}, authHeader string) (
 
 		return nil, fmt.Errorf("error reading body %w", err)
 	}
-
-	log.Println("JSON request response: ", string(data))
 
 	return data, nil
 }
