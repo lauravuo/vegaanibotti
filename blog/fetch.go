@@ -7,6 +7,7 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/blog/cc"
+	"github.com/lauravuo/vegaanibotti/blog/vh"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -24,6 +25,7 @@ func FetchNewPosts(
 ) (base.Collection, error) {
 	fetchers := map[string]fetcher{
 		"cc": {cc.FetchNewPosts, cc.RecipesPath},
+		"vh": {vh.FetchNewPosts, vh.RecipesPath},
 	}
 
 	collection := make(base.Collection)
