@@ -22,11 +22,28 @@ func (p *Post) IsValid() bool {
 	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
 }
 
+func (p *Post) baseSummary() string {
+	return p.Title + lineFeed +
+		p.URL + lineFeed +
+		"#" + strings.Join(p.Hashtags, " #")
+}
+
 func (p *Post) Summary() string {
 	return p.Title + lineFeed +
 		p.Description + lineFeed +
 		p.URL + lineFeed +
 		"#" + strings.Join(p.Hashtags, " #")
+}
+
+func (p *Post) MediumSummary() string {
+	const mediumSummaryMaxLen = 500
+
+	summary := p.Summary()
+	if len(summary) < mediumSummaryMaxLen {
+		return summary
+	}
+
+	return p.baseSummary()
 }
 
 func (p *Post) ShortSummary() string {
@@ -37,7 +54,5 @@ func (p *Post) ShortSummary() string {
 		return summary
 	}
 
-	return p.Title + lineFeed +
-		p.URL + lineFeed +
-		"#" + strings.Join(p.Hashtags, " #")
+	return p.baseSummary()
 }

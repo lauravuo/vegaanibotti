@@ -31,7 +31,7 @@ func InitMastodon() *Mastodon {
 
 func (m *Mastodon) PostToMastodon(post *base.Post) error {
 	status := try.To1(m.Client.PostStatus(context.Background(), &mastodon.Toot{
-		Status:   post.Summary(),
+		Status:   post.MediumSummary(),
 		Language: "fi",
 	}))
 	slog.Info("post sent", "status", status.ID)
