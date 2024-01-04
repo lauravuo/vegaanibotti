@@ -34,5 +34,8 @@ func main() {
 
 		f := bot.InitFB()
 		try.To(f.PostToFB(&chosenPost))
+
+		s := bot.InitSite()
+		try.To(s.PostToSite(&chosenPost))
 	}
 }

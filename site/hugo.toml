@@ -1,0 +1,34 @@
+#baseURL = 'https://lauravuo.github.io/vegaanibotti/'
+languageCode = 'fi-FI'
+title = 'vegaanibotti'
+theme = ["github.com/nicokaiser/hugo-theme-gallery/v2"]
+disableKinds = ["taxonomy", "term"]
+
+[params]
+  title = "vegaanibotti"
+  description = "Ideoita ja inspiraatioa vegaaniseen kokkaukseen! Joka päivä uusi vegaaniresepti 🥦🧑‍🍳😋"
+  defaultTheme = "dark"
+
+[menu]
+[[menu.footer]]
+  name = "Facebook"
+  url = "https://www.facebook.com/profile.php?id=61555117441177"
+[[menu.footer]]
+  name = "Instagram"
+  url = "https://www.instagram.com/vegaanibotti"
+[[menu.footer]]
+  name = "Mastodon"
+  url = "https://botsin.space/@vegaanibotti"
+[[menu.footer]]
+  name = "X"
+  url = "https://twitter.com/vegaanibotti"
+
+[outputs]
+  page = ["HTML"]
+  home = ["HTML", "RSS"]
+  section = ["HTML"]
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.112.0"
