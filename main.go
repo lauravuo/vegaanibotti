@@ -38,5 +38,4 @@ func main() {
 		s := bot.InitSite()
 		try.To(s.PostToSite(&chosenPost))
 	}
-
 }

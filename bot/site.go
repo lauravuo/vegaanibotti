@@ -10,8 +10,7 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
 
-type Site struct {
-}
+type Site struct{}
 
 func InitSite() *Site {
 	return &Site{}
