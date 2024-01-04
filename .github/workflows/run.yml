@@ -43,6 +43,7 @@ jobs:
           git config --global user.name "gh-actions"
           branch="store-changes-$(date +%s)"
           git checkout -b $branch
+          git add site
           git commit -a -m "Store changes to data."
           git push --set-upstream origin $branch
           url=$(gh pr create --fill)
