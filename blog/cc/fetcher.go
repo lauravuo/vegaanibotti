@@ -49,6 +49,31 @@ func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
 	return ""
 }
 
+func getImageURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (imageURL string) {
+	if attrKey == classStr && attrValue == "entry-thumbnail" {
+		_ = tokenizer.Next() //
+		_ = tokenizer.Next() // a-tag
+		_ = tokenizer.Next() // img-tag
+
+		_, moreAttr := tokenizer.TagName()
+
+		var attrKeyBytes, attrValueBytes []byte
+
+		for moreAttr {
+			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
+
+			if string(attrKeyBytes) == "data-lazy-src" {
+				imageURL = string(attrValueBytes)
+				index := strings.LastIndex(imageURL, "/app/uploads")
+
+				return "https://chocochili.net" + imageURL[index:]
+			}
+		}
+	}
+
+	return ""
+}
+
 func getID(attrKey, attrValue string) (id int64, tags []string) {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "teaser post-") {
 		parts := strings.Split(attrValue, " ")
@@ -92,6 +117,10 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 
 		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
 			post.Description = desc
+		}
+
+		if imageURL := getImageURL(tokenizer, attrKeyStr, attrValueStr); imageURL != "" {
+			post.ImageURL = imageURL
 		}
 	}
 }
@@ -149,6 +178,7 @@ func FetchNewPosts(
 							"Title", post.Title,
 							"Description", post.Description,
 							"URL", post.URL,
+							"ImageURL", post.ImageURL,
 							"Hashtags", post.Hashtags,
 						)
 

@@ -42,6 +42,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+//nolint:cyclop
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
@@ -69,6 +70,10 @@ func TestFetchNewPosts(t *testing.T) {
 
 	if post.Description != "Vegaaninen mureke sopii myös joulupöytään!" {
 		t.Errorf("Mismatch with post desc")
+	}
+
+	if post.ImageURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-300x200.jpg" {
+		t.Errorf("Mismatch with post image")
 	}
 
 	if len(post.Hashtags) != 6 {
