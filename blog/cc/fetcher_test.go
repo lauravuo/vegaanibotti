@@ -42,6 +42,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+//nolint:cyclop
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 

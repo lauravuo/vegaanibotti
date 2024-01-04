@@ -123,7 +123,6 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.ImageURL = imageURL
 		}
 	}
-
 }
 
 func FetchNewPosts(
