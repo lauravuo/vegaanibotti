@@ -11,6 +11,7 @@ const lineFeed = "\n\n"
 
 type Post struct {
 	ID          int64
+	ImageURL    string
 	Title       string
 	Description string
 	URL         string
@@ -19,7 +20,7 @@ type Post struct {
 }
 
 func (p *Post) IsValid() bool {
-	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != ""
+	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != "" && p.ImageURL != ""
 }
 
 func (p *Post) baseSummary() string {

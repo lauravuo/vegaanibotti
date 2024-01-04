@@ -40,6 +40,7 @@ func (v *Recipe) ToPost() base.Post {
 		ID:       int64(v.Source.ID[0]),
 		Title:    v.Source.Title[0],
 		URL:      url,
+		ImageURL: v.Source.ImageURL[0],
 		Hashtags: []string{"vegaanihaaste", "vegaani", "vegaaniresepti"},
 	}
 }
