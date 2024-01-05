@@ -24,3 +24,7 @@ test_data
 .DS_Store
 .envrc
 coverage
+
+public
+.hugo_build.lock
+assets/jsconfig.json
