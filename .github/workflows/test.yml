@@ -42,3 +42,20 @@ jobs:
           files: ./coverage.txt,coverage-run.txt
           fail_ci_if_error: ${{ github.ref_name != 'main' }}
           verbose: true
+  build:
+    name: build site
+    runs-on: ubuntu-latest
+    needs: golangci
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: "0.114.1"
+          extended: true
+
+      - name: build
+        run: |
+          cd site
+          hugo --minify

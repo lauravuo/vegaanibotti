@@ -1,4 +1,4 @@
-#baseURL = 'https://lauravuo.github.io/vegaanibotti/'
+baseURL = 'https://lauravuo.github.io/vegaanibotti/'
 languageCode = 'fi-FI'
 title = 'vegaanibotti'
 theme = ["github.com/nicokaiser/hugo-theme-gallery/v2"]
