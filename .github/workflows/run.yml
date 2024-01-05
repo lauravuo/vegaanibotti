@@ -53,6 +53,10 @@ jobs:
           GH_TOKEN: ${{secrets.PAT}}
 
       # update site
+      - uses: ./.github/actions/deploy-site
+        with:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
