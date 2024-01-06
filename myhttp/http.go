@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -32,7 +31,7 @@ func DoGetRequest(path, authHeader string) (data []byte, err error) {
 
 	res, err := getClient().Do(req)
 	if err != nil {
-		log.Println(err)
+		slog.Error(err.Error())
 
 		return
 	}
@@ -46,7 +45,7 @@ func DoGetRequest(path, authHeader string) (data []byte, err error) {
 
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
+		slog.Error(err.Error())
 	}
 
 	return
@@ -69,7 +68,11 @@ func DoPostRequest(path string, values url.Values, authHeader string) (data []by
 
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
+		slog.Error(err.Error())
+	} else {
+		if res.StatusCode != http.StatusOK {
+			slog.Info("Post request", "path", path, "status", res.StatusCode, "payload", string(data))
+		}
 	}
 
 	return
@@ -104,7 +107,7 @@ func DoJSONBytesRequest(path, method string, values []byte, authHeader string) (
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		log.Println(err)
+		slog.Error(err.Error())
 
 		return nil, fmt.Errorf("error reading body %w", err)
 	}
