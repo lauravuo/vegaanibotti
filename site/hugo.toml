@@ -22,6 +22,12 @@ disableKinds = ["taxonomy", "term"]
 [[menu.footer]]
   name = "X"
   url = "https://twitter.com/vegaanibotti"
+[[menu.footer]]
+  name = "GitHub"
+  url = "https://github.com/lauravuo/vegaanibotti"
+[[menu.footer]]
+  name = "RSS"
+  url = "https://lauravuo.github.io/vegaanibotti/index.xml"
 
 [outputs]
   page = ["HTML"]
