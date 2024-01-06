@@ -69,10 +69,8 @@ func DoPostRequest(path string, values url.Values, authHeader string) (data []by
 	data, err = io.ReadAll(res.Body)
 	if err != nil {
 		slog.Error(err.Error())
-	} else {
-		if res.StatusCode != http.StatusOK {
-			slog.Info("Post request", "path", path, "status", res.StatusCode, "payload", string(data))
-		}
+	} else if res.StatusCode != http.StatusOK {
+		slog.Info("Post request", "path", path, "status", res.StatusCode, "payload", string(data))
 	}
 
 	return
