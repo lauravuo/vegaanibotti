@@ -26,7 +26,7 @@ title: "%s"
 image: "%s"
 date: %s
 receipt_url: "%s"
----`, post.Title, post.ImageURL, date, post.URL,
+---`, post.Title, post.ThumbnailURL, date, post.URL,
 	)
 
 	try.To(os.WriteFile(path, []byte(content), base.WritePerm))

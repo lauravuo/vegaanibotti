@@ -40,7 +40,13 @@ func (i *IG) PostToIG(post *base.Post) error {
 	caption = caption[:index] + "\n" + goToBioText + "\n" + caption[index:]
 
 	params := url.Values{}
-	params.Add("image_url", post.ImageURL)
+
+	if post.ImageURL != "" {
+		params.Add("image_url", post.ImageURL)
+	} else {
+		params.Add("image_url", post.ThumbnailURL)
+	}
+
 	params.Add("caption", caption)
 	params.Add("access_token", i.AccessToken)
 

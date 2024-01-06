@@ -49,7 +49,9 @@ func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
 	return ""
 }
 
-func getImageURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (imageURL string) {
+func getImages(tokenizer *html.Tokenizer, attrKey, attrValue string) (thumbnail, image string) {
+	const baseURL = "https://chocochili.net"
+
 	if attrKey == classStr && attrValue == "entry-thumbnail" {
 		_ = tokenizer.Next() //
 		_ = tokenizer.Next() // a-tag
@@ -61,17 +63,27 @@ func getImageURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (imageURL
 
 		for moreAttr {
 			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
+			attrKeyStr := string(attrKeyBytes)
 
-			if string(attrKeyBytes) == "data-lazy-src" {
-				imageURL = string(attrValueBytes)
-				index := strings.LastIndex(imageURL, "/app/uploads")
+			if attrKeyStr == "data-lazy-src" {
+				thumbnail = string(attrValueBytes)
+				index := strings.LastIndex(thumbnail, "/app/uploads")
 
-				return "https://chocochili.net" + imageURL[index:]
+				thumbnail = baseURL + thumbnail[index:]
+			}
+
+			if attrKeyStr == "data-lazy-srcset" {
+				parts := strings.Split(string(attrValueBytes), ",")
+				image = baseURL + strings.Split(strings.TrimSpace(parts[len(parts)-1]), " ")[0]
+			}
+
+			if thumbnail != "" && image != "" {
+				return thumbnail, image
 			}
 		}
 	}
 
-	return ""
+	return thumbnail, image
 }
 
 func getID(attrKey, attrValue string) (id int64, tags []string) {
@@ -119,8 +131,9 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.Description = desc
 		}
 
-		if imageURL := getImageURL(tokenizer, attrKeyStr, attrValueStr); imageURL != "" {
-			post.ImageURL = imageURL
+		if thumbnail, image := getImages(tokenizer, attrKeyStr, attrValueStr); thumbnail != "" {
+			post.ThumbnailURL = thumbnail
+			post.ImageURL = image
 		}
 	}
 }
@@ -178,7 +191,8 @@ func FetchNewPosts(
 							"Title", post.Title,
 							"Description", post.Description,
 							"URL", post.URL,
-							"ImageURL", post.ImageURL,
+							"Thumbnail", post.ThumbnailURL,
+							"Image", post.ImageURL,
 							"Hashtags", post.Hashtags,
 						)
 
