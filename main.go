@@ -37,5 +37,8 @@ func main() {
 
 		s := bot.InitSite()
 		try.To(s.PostToSite(&chosenPost))
+
+		i := bot.InitIG()
+		try.To(i.PostToIG(&chosenPost))
 	}
 }
