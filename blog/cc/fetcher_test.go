@@ -72,8 +72,12 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Mismatch with post desc")
 	}
 
-	if post.ImageURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-300x200.jpg" {
-		t.Errorf("Mismatch with post image")
+	if post.ThumbnailURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-300x200.jpg" {
+		t.Errorf("Mismatch with post thumbnail")
+	}
+
+	if post.ImageURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-700x470.jpg" {
+		t.Errorf("Mismatch with post image: " + post.ImageURL)
 	}
 
 	if len(post.Hashtags) != 6 {

@@ -32,16 +32,24 @@ type Recipe struct {
 	} `json:"_source"`
 }
 
+func getSecureURL(input string) string {
+	return strings.ReplaceAll(input, "http:", "https:")
+}
+
 func (v *Recipe) ToPost() base.Post {
 	url := strings.Replace(v.Source.URL[0], "http://users.", "https://", 1)
 	url = strings.Replace(url, "https://users.", "https://", 1)
+	thumbnail := getSecureURL(v.Source.ImageURL[0])
+	image := strings.ReplaceAll(thumbnail, "styles/recipe_thumbnail/public/", "")
+	index := strings.LastIndex(image, "?")
 
 	return base.Post{
-		ID:       int64(v.Source.ID[0]),
-		Title:    v.Source.Title[0],
-		URL:      url,
-		ImageURL: v.Source.ImageURL[0],
-		Hashtags: []string{"vegaanihaaste", "vegaani", "vegaaniresepti"},
+		ID:           int64(v.Source.ID[0]),
+		Title:        v.Source.Title[0],
+		URL:          url,
+		ImageURL:     image[:index],
+		ThumbnailURL: thumbnail,
+		Hashtags:     []string{"vegaanihaaste", "vegaani", "vegaaniresepti"},
 	}
 }
 
