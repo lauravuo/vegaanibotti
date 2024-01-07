@@ -1,7 +1,7 @@
 name: run-app
 on:
   schedule:
-    - cron: "0 1 * * *" # run at 1 AM UTC on weekdays
+    - cron: "0 3 * * *" # run at 3 AM UTC
   workflow_dispatch:
 
 jobs:
