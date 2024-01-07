@@ -21,9 +21,8 @@ type Response struct {
 	//nolint:tagliatelle
 	Type string `json:"token_type"`
 	//nolint:tagliatelle
-	Expires int `json:"expires_in"`
-	//nolint:tagliatelle
-	Scope string `json:"scope"`
+	Expires int    `json:"expires_in"`
+	Scope   string `json:"scope"`
 }
 
 func FetchAccessToken(clientID, clientSecret, refreshToken, endpoint string) string {
