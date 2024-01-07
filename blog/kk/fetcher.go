@@ -52,10 +52,10 @@ func (r *Recipe) ToPost() base.Post {
 	postID := try.To1(strconv.ParseInt(strings.Split(string(strID), ":")[1], 10, 64))
 
 	// Title
-	var titleBytes []byte
+	titleBytes := make([]byte, len([]byte(r.Title)))
 
 	caser := cases.Title(language.Finnish)
-	_, _ = try.To2(caser.Transform([]byte(r.Title), titleBytes, true))
+	_, _ = try.To2(caser.Transform(titleBytes, []byte(r.Title), true))
 
 	// Description
 	startIndex := strings.Index(r.Excerpt, ">")
@@ -66,7 +66,7 @@ func (r *Recipe) ToPost() base.Post {
 	return base.Post{
 		ID:           postID,
 		Title:        string(titleBytes),
-		Description:  r.Excerpt[startIndex:endIndex],
+		Description:  r.Excerpt[startIndex+1 : endIndex],
 		ThumbnailURL: fmt.Sprintf("%s%s&w=384&q=75", baseImageURL, r.FeaturedImage.Nodes.Src),
 		ImageURL:     baseImageURL + r.FeaturedImage.Nodes.Src + "&w=1920&q=75",
 		URL:          "https://kasviskapina.fi/reseptit/" + r.Slug,
