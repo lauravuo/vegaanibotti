@@ -82,7 +82,7 @@ func FetchNewPosts(
 ) (base.RecipeBank, error) {
 	// No pagination currently?, fetch all at once
 	res := try.To1(
-		myhttp.DoGetRequest("https://www.kasviskapina.fi/_next/data/9LbFsI_aPTZdpR7caehIE/fi/kategoriat/reseptit.json?slug=paaruoka", ""),
+		myhttp.DoGetRequest("https://www.kasviskapina.fi/_next/data/gHr6sRGQ9FIGCiM0hHwUQ/fi/kategoriat/reseptit.json?slug=paaruoka", ""),
 	)
 
 	var apiResponse Response
