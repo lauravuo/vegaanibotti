@@ -80,9 +80,17 @@ func FetchNewPosts(
 	_ func(string, string) ([]byte, error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
+	urlRes := string(try.To1(
+		myhttp.DoGetRequest("https://www.kasviskapina.fi/", ""),
+	))
+	endIndex := strings.Index(urlRes, "/_buildManifest.js")
+	startIndex := strings.LastIndex(urlRes[:endIndex], "/")
+
 	// No pagination currently?, fetch all at once
 	res := try.To1(
-		myhttp.DoGetRequest("https://www.kasviskapina.fi/_next/data/gHr6sRGQ9FIGCiM0hHwUQ/fi/kategoriat/reseptit.json?slug=paaruoka", ""),
+		myhttp.DoGetRequest(
+			fmt.Sprintf("https://www.kasviskapina.fi/_next/data/%s/fi/kategoriat/reseptit.json?slug=paaruoka", urlRes[startIndex+1:endIndex]),
+			""),
 	)
 
 	var apiResponse Response
