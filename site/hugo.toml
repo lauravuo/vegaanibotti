@@ -6,7 +6,7 @@ disableKinds = ["taxonomy", "term"]
 
 [params]
   title = "vegaanibotti"
-  description = "Ideoita ja inspiraatioa vegaaniseen kokkaukseen! Joka päivä uusi vegaaniresepti 🥦🧑‍🍳😋"
+  description = "Ideoita ja inspiraatiota vegaaniseen kokkaukseen! Joka päivä uusi vegaaniresepti 🥦🧑‍🍳😋"
   defaultTheme = "dark"
 
 [menu]
