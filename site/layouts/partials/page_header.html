@@ -1,0 +1,11 @@
+{{ if .Title }}
+  <div class="mx-auto mb-8 mt-9 max-w-screen-lg px-6 text-center">
+    <h1 class="text-3xl font-semibold md:text-4xl">{{ .Title }}</h1>
+    {{ if .Params.Description }}
+      <p class="mt-6 text-secondary md:text-lg">{{ .Params.Description }}</p>
+    {{ end }}
+    <div class=" mx-auto mt-4 flex max-w-screen-3xl flex-none flex-wrap justify-center px-6 text-center text-sm text-secondary">
+      {{.Content}}
+    </div>
+  </div>
+{{ end }}
