@@ -1,5 +1,5 @@
 <div class="mb-12 mt-9 grid grid-cols-1 gap-x-6 gap-y-9 px-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5">
-  {{ range (.Paginate (first 50 .RegularPagesRecursive)).Pages }}
+  {{ range (.Paginator 50).Pages }}
   <a href="{{ .Params.receipt_url }}" class="transition-[filter] hover:brightness-90  dark:hover:brightness-110" title="{{ .Title }}">
     <div class="h-100">
       <div class="w-full overflow-hidden rounded-2xl">
