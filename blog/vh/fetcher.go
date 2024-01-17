@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strings"
@@ -85,6 +86,7 @@ func doSearch(count int, payload string) (searchRes SearchResponse, err error) {
 func FetchNewPosts(
 	recipesFilePath string,
 	_ func(string, string) ([]byte, error),
+	httpPoster func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	posts, maxID := base.LoadExistingPosts(recipesFilePath)

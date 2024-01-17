@@ -1,9 +1,8 @@
-package cc
+package vmm
 
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/url"
 	"os"
@@ -15,6 +14,10 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/base"
 	"golang.org/x/net/html"
 )
+
+const RecipesPath = base.DataPath + "/vmm/recipes.json"
+
+const UsedIDsPath = base.DataPath + "/vmm/used.json"
 
 const classStr = "class"
 
@@ -148,7 +151,29 @@ func FetchNewPosts(
 	posts, maxID := base.LoadExistingPosts(recipesFilePath)
 	existingFound := false
 
-	url := "https://chocochili.net/luokka/paaruoat/page/%d/"
+	fetchURL := "https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php"
+
+	params := url.Values{}
+	params.Add("order", "desc")
+	params.Add("offset", "0")
+	params.Add("layout", "photography")
+	params.Add("from", "customize")
+	params.Add("template", "sidebar")
+	params.Add("ppp", "6")
+	params.Add("archivetype", "cat")
+	params.Add("archivevalue", "177")
+	params.Add("action", "penci_archive_more_post_ajax")
+	params.Add("nonce", "50fe87c6df")
+
+	// TODO: post
+	// curl -X -v POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=0&layout=photography&archivetype=cat&archivevalue=232&nonce=123"
+	// curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax"
+	// vegaani: curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax&nonce=ba2ef3f117"
+	// kasvispääruuat: order=desc&offset=46&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=177&action=penci_archive_more_post_ajax&nonce=50fe87c6df
+	// curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "action=pagination_request&sid=88ac6b0zh9&unid=&isblock=&postid=&page=4&lang=&ajax_nonce=55223f0412&custom_data%5Bsf_taxo%5D=%7B%7D&custom_data%5Bsf_opera%5D=%7B%7D"
+	//
+	// order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax&nonce=ba2ef3f117
+	// action=pagination_request&sid=88ac6b0zh9&unid=&isblock=&postid=&page=4&lang=&ajax_nonce=55223f0412&custom_data%5Bsf_taxo%5D=%7B%7D&custom_data%5Bsf_opera%5D=%7B%7D
 	index := 1
 
 	added := make(map[int64]bool)
@@ -156,11 +181,13 @@ func FetchNewPosts(
 	post := &base.Post{}
 
 	for !existingFound {
-		fetchURL := fmt.Sprintf(url, index)
-
 		slog.Info("Fetching URL", "url", fetchURL)
 
-		data, err := httpGetter(fetchURL, "")
+		data, err := httpPoster(
+			fetchURL,
+			params,
+			"",
+		)
 		if err != nil {
 			slog.Info("Stopped fetching", "count", index-1)
 
@@ -183,7 +210,7 @@ func FetchNewPosts(
 					if _, ok := added[post.ID]; !ok {
 						tags := post.Hashtags
 						post.Hashtags = make([]string, 0)
-						post.Hashtags = append(post.Hashtags, []string{"chocochili", "vegaani", "vegaaniresepti"}...)
+						post.Hashtags = append(post.Hashtags, []string{"viimeistämuruamyöden", "vegaani", "vegaaniresepti"}...)
 						post.Hashtags = append(post.Hashtags, tags...)
 						post.Added = true
 						posts = append(posts, *post)

@@ -2,6 +2,7 @@ package blog
 
 import (
 	"log/slog"
+	"net/url"
 	"os"
 
 	"github.com/lainio/err2/try"
@@ -16,6 +17,7 @@ type fetcher struct {
 	fn func(
 		string,
 		func(string, string) ([]byte, error),
+		func(string, url.Values, string) (data []byte, err error),
 		bool,
 	) (base.RecipeBank, error)
 	recipesPath string
@@ -44,6 +46,7 @@ func FetchNewPosts(
 			collection[entry.Name()] = try.To1(fetch.fn(
 				fetch.recipesPath,
 				myhttp.DoGetRequest,
+				myhttp.DoPostRequest,
 				previewOnly,
 			))
 		}
