@@ -3,6 +3,7 @@ package vmm
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/url"
 	"os"
@@ -22,7 +23,7 @@ const UsedIDsPath = base.DataPath + "/vmm/used.json"
 const classStr = "class"
 
 func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
-	if attrKey == classStr && attrValue == "entry-title" {
+	if attrKey == classStr && strings.HasPrefix(attrValue, "entry-title") {
 		_ = tokenizer.Next() // a-tag
 		_, moreAttr := tokenizer.TagName()
 
@@ -43,75 +44,28 @@ func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title
 }
 
 func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
-	if attrKey == classStr && attrValue == "entry-summary" {
-		_ = z.Next() // p-tag
-		_ = z.Next() // a value
-
-		return z.Token().Data
-	}
-
 	return ""
 }
 
 func getImages(tokenizer *html.Tokenizer, attrKey, attrValue string) (thumbnail, image string) {
-	const baseURL = "https://chocochili.net"
-
-	if attrKey == classStr && attrValue == "entry-thumbnail" {
-		_ = tokenizer.Next() //
-		_ = tokenizer.Next() // a-tag
-		_ = tokenizer.Next() // img-tag
-
-		_, moreAttr := tokenizer.TagName()
-
-		var attrKeyBytes, attrValueBytes []byte
-
-		for moreAttr {
-			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
-			attrKeyStr := string(attrKeyBytes)
-
-			if attrKeyStr == "data-lazy-src" {
-				thumbnail = string(attrValueBytes)
-				index := strings.LastIndex(thumbnail, "/app/uploads")
-
-				thumbnail = baseURL + thumbnail[index:]
-			}
-
-			if attrKeyStr == "data-lazy-srcset" {
-				parts := strings.Split(string(attrValueBytes), ",")
-				image = baseURL + strings.Split(strings.TrimSpace(parts[len(parts)-1]), " ")[0]
-			}
-
-			if thumbnail != "" && image != "" {
-				return thumbnail, image
-			}
-		}
+	if attrKey == "data-bgset" {
+		return attrValue, attrValue
 	}
-
 	return thumbnail, image
 }
 
-func getID(attrKey, attrValue string) (id int64, tags []string) {
-	if attrKey == classStr && strings.HasPrefix(attrValue, "teaser post-") {
-		parts := strings.Split(attrValue, " ")
-		strID, _ := strings.CutPrefix(parts[1], "post-")
+func getID(tagName, attrKey, attrValue string) (id int64) {
+	if tagName == "article" && attrKey == "id" && strings.HasPrefix(attrValue, "post-") {
+		strID := strings.ReplaceAll(attrValue, "post-", "")
 
-		tags := make([]string, 0)
-
-		for _, className := range parts {
-			if strings.HasPrefix(className, "tag-") {
-				tag, _ := strings.CutPrefix(className, "tag-")
-				tags = append(tags, tag)
-			}
-		}
-
-		return try.To1(strconv.ParseInt(strID, 10, 64)), tags
+		return try.To1(strconv.ParseInt(strID, 10, 64))
 	}
 
-	return 0, []string{}
+	return 0
 }
 
 func getPost(tokenizer *html.Tokenizer, post *base.Post) {
-	_, moreAttr := tokenizer.TagName()
+	tagName, moreAttr := tokenizer.TagName()
 
 	var attrKey, attrValue []byte
 
@@ -121,9 +75,9 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 		attrKeyStr := string(attrKey)
 		attrValueStr := string(attrValue)
 
-		if id, tagNames := getID(attrKeyStr, attrValueStr); id != 0 {
+		if id := getID(string(tagName), attrKeyStr, attrValueStr); id != 0 {
 			post.ID = id
-			post.Hashtags = tagNames
+			post.Hashtags = []string{"viimeistämuruamyöden"}
 		}
 
 		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
@@ -155,7 +109,6 @@ func FetchNewPosts(
 
 	params := url.Values{}
 	params.Add("order", "desc")
-	params.Add("offset", "0")
 	params.Add("layout", "photography")
 	params.Add("from", "customize")
 	params.Add("template", "sidebar")
@@ -183,13 +136,15 @@ func FetchNewPosts(
 	for !existingFound {
 		slog.Info("Fetching URL", "url", fetchURL)
 
+		params.Set("offset", fmt.Sprintf("%d", len(added)))
+
 		data, err := httpPoster(
 			fetchURL,
 			params,
 			"",
 		)
 		if err != nil {
-			slog.Info("Stopped fetching", "count", index-1)
+			slog.Info("Stopped fetching", "round", index-1)
 
 			break
 		}

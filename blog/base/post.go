@@ -22,7 +22,7 @@ type Post struct {
 }
 
 func (p *Post) IsValid() bool {
-	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != "" && p.ThumbnailURL != ""
+	return p.ID != 0 && p.Title != "" && len(p.Hashtags) > 0 && p.URL != "" && p.ThumbnailURL != ""
 }
 
 func (p *Post) baseSummary() string {

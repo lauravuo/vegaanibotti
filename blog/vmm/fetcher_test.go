@@ -2,6 +2,7 @@ package vmm_test
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"testing"
@@ -15,6 +16,7 @@ const testDataPath = "./test_data/"
 var errNotFound = errors.New("not found")
 
 func poster(url string, params url.Values, _ string) ([]byte, error) {
+	fmt.Println(params)
 	if params.Get("offset") == "0" {
 		data := try.To1(os.ReadFile("./test_data.txt"))
 
@@ -56,31 +58,31 @@ func TestFetchNewPosts(t *testing.T) {
 	}
 
 	post := recipes.Posts[0]
-	if post.ID != 19236 {
+	if post.ID != 16465 {
 		t.Errorf("Mismatch with post ID")
 	}
 
-	if post.Title != "Helppo vegemureke" {
+	if post.Title != "Haudutettu vegechili – chili sin carnella täytetyt enchiladat" {
 		t.Errorf("Mismatch with post title")
 	}
 
-	if post.URL != "https://chocochili.net/2023/12/helppo-vegemureke/" {
+	if post.URL != "https://viimeistamuruamyoten.com/haudutettu-vegechili-chili-sin-carnella-taytetyt-enchiladat/" {
 		t.Errorf("Mismatch with post url")
 	}
 
-	if post.Description != "Vegaaninen mureke sopii myös joulupöytään!" {
+	if post.Description != "" {
 		t.Errorf("Mismatch with post desc")
 	}
 
-	if post.ThumbnailURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-300x200.jpg" {
+	if post.ThumbnailURL != "https://viimeistamuruamyoten.com/wp-content/uploads/2021/10/vegechili-chili-sin-carne-enchiladat-vaaka-585x390.jpg" {
 		t.Errorf("Mismatch with post thumbnail")
 	}
 
-	if post.ImageURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-700x470.jpg" {
+	if post.ImageURL != post.ThumbnailURL {
 		t.Errorf("Mismatch with post image: " + post.ImageURL)
 	}
 
-	if len(post.Hashtags) != 6 {
+	if len(post.Hashtags) != 1 {
 		t.Errorf("Mismatch with post hashtags")
 	}
 
