@@ -16,7 +16,7 @@ const testDataPath = "./test_data/"
 var errNotFound = errors.New("not found")
 
 func poster(url string, params url.Values, _ string) ([]byte, error) {
-	fmt.Println(params)
+	fmt.Println(params.Get("offset"))
 	if params.Get("offset") == "0" {
 		data := try.To1(os.ReadFile("./test_data.txt"))
 
@@ -53,8 +53,8 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Expected success, got: %s", err)
 	}
 
-	if len(recipes.Posts) != 10 {
-		t.Errorf("Expected to find 10 posts, got %d posts.", len(recipes.Posts))
+	if len(recipes.Posts) != 6 {
+		t.Errorf("Expected to find 6 posts, got %d posts.", len(recipes.Posts))
 	}
 
 	post := recipes.Posts[0]
@@ -82,7 +82,7 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Mismatch with post image: " + post.ImageURL)
 	}
 
-	if len(post.Hashtags) != 1 {
+	if len(post.Hashtags) != 3 {
 		t.Errorf("Mismatch with post hashtags")
 	}
 

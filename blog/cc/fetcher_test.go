@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
-	recipes, err := cc.FetchNewPosts("./test_data/recipes.json", getter, false)
+	recipes, err := cc.FetchNewPosts("./test_data/recipes.json", getter, nil, false)
 	if err != nil {
 		t.Errorf("Expected success, got: %s", err)
 	}

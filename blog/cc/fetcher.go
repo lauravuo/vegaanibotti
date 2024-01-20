@@ -137,6 +137,7 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.ImageURL = image
 		}
 	}
+	post.HasDescription = true
 }
 
 func FetchNewPosts(

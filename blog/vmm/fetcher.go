@@ -77,7 +77,7 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 
 		if id := getID(string(tagName), attrKeyStr, attrValueStr); id != 0 {
 			post.ID = id
-			post.Hashtags = []string{"viimeistämuruamyöden"}
+			post.Hashtags = []string{}
 		}
 
 		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
@@ -114,19 +114,10 @@ func FetchNewPosts(
 	params.Add("template", "sidebar")
 	params.Add("ppp", "6")
 	params.Add("archivetype", "cat")
-	params.Add("archivevalue", "177")
+	params.Add("archivevalue", "177") // vegan 232
 	params.Add("action", "penci_archive_more_post_ajax")
 	params.Add("nonce", "50fe87c6df")
 
-	// TODO: post
-	// curl -X -v POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=0&layout=photography&archivetype=cat&archivevalue=232&nonce=123"
-	// curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax"
-	// vegaani: curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax&nonce=ba2ef3f117"
-	// kasvispääruuat: order=desc&offset=46&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=177&action=penci_archive_more_post_ajax&nonce=50fe87c6df
-	// curl -X POST https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php -H "Content-Type: application/x-www-form-urlencoded" -d "action=pagination_request&sid=88ac6b0zh9&unid=&isblock=&postid=&page=4&lang=&ajax_nonce=55223f0412&custom_data%5Bsf_taxo%5D=%7B%7D&custom_data%5Bsf_opera%5D=%7B%7D"
-	//
-	// order=desc&offset=34&layout=photography&from=customize&template=sidebar&ppp=6&archivetype=cat&archivevalue=232&action=penci_archive_more_post_ajax&nonce=ba2ef3f117
-	// action=pagination_request&sid=88ac6b0zh9&unid=&isblock=&postid=&page=4&lang=&ajax_nonce=55223f0412&custom_data%5Bsf_taxo%5D=%7B%7D&custom_data%5Bsf_opera%5D=%7B%7D
 	index := 1
 
 	added := make(map[int64]bool)
