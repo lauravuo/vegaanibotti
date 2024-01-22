@@ -38,7 +38,8 @@ func main() {
 		s := bot.InitSite()
 		try.To(s.PostToSite(&chosenPost))
 
+		//nolint:gocritic
 		// i := bot.InitIG()
 		// try.To(i.PostToIG(&chosenPost))
-	}
+	} //nolint:wsl
 }
