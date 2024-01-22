@@ -96,6 +96,10 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 	}
 }
 
+func fetchPostsForCategory(category string) []base.Post {
+	// fetch all after maxID
+}
+
 func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
