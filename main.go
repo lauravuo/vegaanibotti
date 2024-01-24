@@ -7,6 +7,7 @@ import (
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog"
 	"github.com/lauravuo/vegaanibotti/bot"
+	"github.com/lauravuo/vegaanibotti/bot/img"
 )
 
 func main() {
@@ -26,6 +27,13 @@ func main() {
 			"description", chosenPost.Description,
 			"url", chosenPost.URL)
 
+		// Generate and upload image
+		bucketURL := os.Getenv("CLOUD_BUCKET_URL")
+		imageFile, smallImageFile := img.GenerateThumbnail(&chosenPost, "./bot/img/vegaanibotti.png", "image")
+		paths := img.UploadToCloud([]string{imageFile, smallImageFile})
+		chosenPost.ImageURL = bucketURL + "/" + paths[0]
+		chosenPost.ThumbnailURL = bucketURL + "/" + paths[1]
+
 		m := bot.InitMastodon()
 		try.To(m.PostToMastodon(&chosenPost))
 
@@ -38,8 +46,7 @@ func main() {
 		s := bot.InitSite()
 		try.To(s.PostToSite(&chosenPost))
 
-		//nolint:gocritic
-		// i := bot.InitIG()
-		// try.To(i.PostToIG(&chosenPost))
-	} //nolint:wsl
+		i := bot.InitIG()
+		try.To(i.PostToIG(&chosenPost))
+	}
 }

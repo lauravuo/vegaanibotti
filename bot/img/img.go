@@ -1,6 +1,8 @@
 package img
 
 import (
+	"context"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -8,7 +10,12 @@ import (
 	"math"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/golang/freetype/truetype"
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog/base"
@@ -24,6 +31,7 @@ const (
 	spacing      = 0.9 // line spacing (e.g. 2 means double spaced)
 )
 
+//nolint:gocognit,gocyclo,cyclop
 func getParts(str, delimiter string, maxW int, drawer *font.Drawer) []string {
 	const maxRows = 4
 
@@ -36,10 +44,26 @@ func getParts(str, delimiter string, maxW int, drawer *font.Drawer) []string {
 
 	for _, part := range parts {
 		partLen := drawer.MeasureString(part)
+
+		//nolint:nestif
 		if partLen > fixed.I(maxW) {
 			extraParts := strings.Split(part, "-")
-			if len(extraParts) == 1 {
+			if strings.Contains(part, "-") {
+				for i := range extraParts {
+					if i < len(extraParts)-1 {
+						extraParts[i] += "-"
+					}
+				}
+			}
+
+			if len(extraParts) == 1 && strings.Contains(part, "\u00ad") {
 				extraParts = strings.Split(part, "\u00ad")
+
+				for i := range extraParts {
+					if i < len(extraParts)-1 {
+						extraParts[i] += "\u00ad"
+					}
+				}
 			}
 
 			res = append(res, extraParts...)
@@ -128,7 +152,7 @@ func getImageFromFilePath(filePath string) image.Image {
 	return img
 }
 
-func GenerateThumbnail(post *base.Post, src, target string) {
+func GenerateThumbnail(post *base.Post, src, target string) (imagePath, smallImagePath string) {
 	const smallFactor = 3
 
 	img := getImageFromFilePath(src)
@@ -143,7 +167,10 @@ func GenerateThumbnail(post *base.Post, src, target string) {
 		fontSizeFactor = 22
 		writeWithFont(drawImg, "="+post.Author+"=", "", regFontFile, fontSizeFactor, true)
 
-		out := try.To1(os.Create(target + ".png"))
+		imagePath = target + ".png"
+		smallImagePath = target + "_small.png"
+
+		out := try.To1(os.Create(imagePath))
 		defer out.Close()
 
 		try.To(png.Encode(out, drawImg))
@@ -152,9 +179,62 @@ func GenerateThumbnail(post *base.Post, src, target string) {
 		dst := image.NewRGBA(rect)
 		resize.CatmullRom.Scale(dst, rect, drawImg, drawImg.Bounds(), draw.Over, nil)
 
-		outThumb := try.To1(os.Create(target + "_small.png"))
+		outThumb := try.To1(os.Create(smallImagePath))
 		defer outThumb.Close()
 
 		try.To(png.Encode(outThumb, dst))
 	}
+
+	return imagePath, smallImagePath
+}
+
+func UploadToCloud(filePaths []string) []string {
+	bucketName := os.Getenv("CLOUD_BUCKET_NAME")
+	accountID := os.Getenv("CLOUD_ACCOUNT_ID")
+	accessKeyID := os.Getenv("CLOUD_ACCESS_KEY_ID")
+	accessKeySecret := os.Getenv("CLOUD_ACCESS_KEY_SECRET")
+	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+		return aws.Endpoint{
+			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
+		}, nil
+	})
+
+	cfg := try.To1(config.LoadDefaultConfig(context.TODO(),
+		config.WithEndpointResolverWithOptions(r2Resolver),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
+		config.WithRegion("auto"),
+	))
+
+	client := s3.NewFromConfig(cfg)
+	now := time.Now()
+	year := fmt.Sprintf("%d", now.Year())
+	month := fmt.Sprintf("%02d", now.Month())
+	date := fmt.Sprintf("%s-%s-%02d", year, month, now.Day())
+
+	res := make([]string, 0)
+
+	for _, filePath := range filePaths {
+		file := try.To1(os.Open(filePath))
+		small := ""
+
+		if strings.Contains(filePath, "small") {
+			small = "_small"
+		}
+
+		contentType := "image/png"
+		path := year + "/" + month + "/" + date + small + ".png"
+
+		_ = try.To1(client.PutObject(context.TODO(), &s3.PutObjectInput{
+			Bucket:      aws.String(bucketName),
+			Key:         aws.String(path),
+			Body:        file,
+			ContentType: &contentType,
+		}))
+
+		file.Close()
+
+		res = append(res, path)
+	}
+
+	return res
 }

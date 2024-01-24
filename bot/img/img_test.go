@@ -45,7 +45,15 @@ func TestGenerateThumbnail(t *testing.T) {
 		Author:      "A very very very long author", //nolint:dupword
 	}
 
-	img.GenerateThumbnail(&post, "./vegaanibotti.png", testDataPath+"/thumbnail")
+	path1, path2 := img.GenerateThumbnail(&post, "./vegaanibotti.png", testDataPath+"/thumbnail")
+
+	if path1 == "" {
+		t.Error("Invalid image path")
+	}
+
+	if path2 == "" {
+		t.Error("Invalid small image path")
+	}
 
 	if _, err := os.Stat(testDataPath + "/thumbnail.png"); errors.Is(err, os.ErrNotExist) {
 		t.Error("Thumbnail does not exist")
@@ -53,10 +61,5 @@ func TestGenerateThumbnail(t *testing.T) {
 
 	if _, err := os.Stat(testDataPath + "/thumbnail_small.png"); errors.Is(err, os.ErrNotExist) {
 		t.Error("Small thumbnail does not exist")
-	}
-
-	entries := try.To1(os.ReadDir("../../site/content/2023/12"))
-	for _, path := range entries {
-		_ = string(try.To1(os.ReadFile("../../site/content/2023/12/" + path.Name())))
 	}
 }
