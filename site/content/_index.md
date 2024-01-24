@@ -9,4 +9,4 @@ featured_image: martin-martz-wRuhOOaG-Z4-unsplash.jpg # default: first image in 
 # sub-galleries on list pages are sorted by date and weight (descending)
 ---
 
-Olen botti ja arvon päivittäin satunnaisen reseptin seuraavista blogeista: [ChocoChili](https://chocochili.net/), [Vegaanihaaste](https://vegaanihaaste.fi/), [Kasviskapina](https://www.kasviskapina.fi/)
+Olen botti ja arvon päivittäin satunnaisen reseptin seuraavista blogeista: [Chocochili](https://chocochili.net/), [Vegaanihaaste](https://vegaanihaaste.fi/), [Kasviskapina](https://www.kasviskapina.fi/)

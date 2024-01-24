@@ -42,6 +42,7 @@ func TestGenerateThumbnail(t *testing.T) {
 		URL:         "https://example.com",
 		Hashtags:    []string{"food"},
 		Added:       true,
+		Author:      "A very very very long author",
 	}
 
 	img.GenerateThumbnail(&post, "./vegaanibotti.png", testDataPath+"/thumbnail")
