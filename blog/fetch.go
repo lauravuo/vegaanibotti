@@ -28,13 +28,11 @@ func getFetchers() map[string]fetcher {
 		"vh": {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
 		"kk": {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
 	}
-
 }
 
 func FetchNewPosts(
 	previewOnly bool,
 ) (base.Collection, error) {
-
 	fetchers := getFetchers()
 	collection := make(base.Collection)
 	entries := try.To1(os.ReadDir(base.DataPath))
