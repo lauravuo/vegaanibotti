@@ -17,6 +17,8 @@ func InitSite() *Site {
 }
 
 func (s *Site) PostToSite(post *base.Post) error {
+	const dirPermission = 0o700
+
 	now := time.Now()
 	year := fmt.Sprintf("%d", now.Year())
 	month := fmt.Sprintf("%02d", now.Month())
@@ -32,7 +34,7 @@ receipt_url: "%s"
 ---`, post.Title, date, post.URL,
 	)
 
-	try.To(os.MkdirAll(folder, 0o700))
+	try.To(os.MkdirAll(folder, dirPermission))
 	try.To(os.WriteFile(path, []byte(content), base.WritePerm))
 
 	slog.Info("post written to file", "path", path)

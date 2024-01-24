@@ -5,7 +5,6 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
-	_ "image/png"
 	"math"
 	"os"
 	"strings"
@@ -67,6 +66,7 @@ func getParts(str string, maxW int, drawer *font.Drawer) []string {
 func writeWithFont(img draw.Image, text string) {
 	const (
 		fontSizeFactor = 6
+		middleFactor   = 2
 		margin         = 10 * 2
 		dpiFactor      = dpi / 72
 	)
@@ -92,7 +92,7 @@ func writeWithFont(img draw.Image, text string) {
 	parts := getParts(text, img.Bounds().Dx()-margin, drawer)
 	diffY := int(math.Ceil(size * spacing * dpiFactor))
 	coordY := 10 + int(math.Ceil(size*dpiFactor))
-	coordY += int((float64(img.Bounds().Dy()) - (size * float64(len(parts)))) / 2)
+	coordY += int((float64(img.Bounds().Dy()) - (size * float64(len(parts)))) / middleFactor)
 
 	for _, part := range parts {
 		drawer.Dot = fixed.Point26_6{
@@ -115,7 +115,9 @@ func getImageFromFilePath(filePath string) image.Image {
 
 func GenerateThumbnail(post *base.Post, src, target string) {
 	const smallFactor = 3
+
 	img := getImageFromFilePath(src)
+
 	if drawImg, ok := img.(draw.Image); ok {
 		myGray := color.RGBA{0, 0, 0, 100} //  R, G, B, Alpha
 		draw.Draw(drawImg, drawImg.Bounds(), &image.Uniform{myGray}, image.Point{}, draw.Over)

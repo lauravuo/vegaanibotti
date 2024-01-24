@@ -2,7 +2,6 @@ package img_test
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -38,7 +37,7 @@ func TestGenerateThumbnail(t *testing.T) {
 
 	post := base.Post{
 		ID:          1,
-		Title:       "Okono­miyaki – Japani­lainen Kaali­pannukakku",
+		Title:       "title",
 		Description: "description",
 		URL:         "https://example.com",
 		Hashtags:    []string{"food"},
@@ -57,7 +56,6 @@ func TestGenerateThumbnail(t *testing.T) {
 
 	entries := try.To1(os.ReadDir("../../site/content/2023/12"))
 	for _, path := range entries {
-		content := string(try.To1(os.ReadFile("../../site/content/2023/12/" + path.Name())))
-		fmt.Println(content)
+		_ = string(try.To1(os.ReadFile("../../site/content/2023/12/" + path.Name())))
 	}
 }

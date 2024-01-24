@@ -11,7 +11,7 @@ const lineFeed = "\n\n"
 
 type Post struct {
 	ID           int64    `json:"id"`
-	Author       string   `json:"-"` // TODO
+	Author       string   `json:"-"`
 	ThumbnailURL string   `json:"thumbnail"`
 	ImageURL     string   `json:"image"`
 	Title        string   `json:"title"`
