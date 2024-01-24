@@ -19,17 +19,21 @@ type fetcher struct {
 		bool,
 	) (base.RecipeBank, error)
 	recipesPath string
+	author      string
+}
+
+func getFetchers() map[string]fetcher {
+	return map[string]fetcher{
+		"cc": {cc.FetchNewPosts, cc.RecipesPath, "Chocochili"},
+		"vh": {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
+		"kk": {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
+	}
 }
 
 func FetchNewPosts(
 	previewOnly bool,
 ) (base.Collection, error) {
-	fetchers := map[string]fetcher{
-		"cc": {cc.FetchNewPosts, cc.RecipesPath},
-		"vh": {vh.FetchNewPosts, vh.RecipesPath},
-		"kk": {kk.FetchNewPosts, kk.RecipesPath},
-	}
-
+	fetchers := getFetchers()
 	collection := make(base.Collection)
 	entries := try.To1(os.ReadDir(base.DataPath))
 

@@ -80,6 +80,7 @@ func ChooseNextPost(posts base.Collection, usedBlogsIDsPath string) base.Post {
 
 	slog.Info("Picking random post", "index", randomPostIndex)
 	chosenPost := &posts[blogID].Posts[randomPostIndex]
+	chosenPost.Author = getFetchers()[blogID].author
 
 	usedIDs = append(usedIDs, chosenPost.ID)
 	usedBlogIDs = append(usedBlogIDs, blogID)

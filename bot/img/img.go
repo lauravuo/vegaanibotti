@@ -18,16 +18,20 @@ import (
 )
 
 const (
-	dpi         = 72.0 // screen resolution in Dots Per Inch
-	fontFile    = "./font/Amatic_SC/AmaticSC-Bold.ttf"
-	regFontFile = "./font/Amatic_SC/AmaticSC-Regular.ttf"
-	spacing     = 0.9 // line spacing (e.g. 2 means double spaced)
+	dpi          = 72.0 // screen resolution in Dots Per Inch
+	boldFontFile = "./font/Amatic_SC/AmaticSC-Bold.ttf"
+	regFontFile  = "./font/Amatic_SC/AmaticSC-Regular.ttf"
+	spacing      = 0.9 // line spacing (e.g. 2 means double spaced)
 )
 
-func getParts(str string, maxW int, drawer *font.Drawer) []string {
+func getParts(str, delimiter string, maxW int, drawer *font.Drawer) []string {
 	const maxRows = 4
 
-	parts := strings.Split(str, " ")
+	if delimiter == "" {
+		return []string{str}
+	}
+
+	parts := strings.Split(str, delimiter)
 	res := make([]string, 0)
 
 	for _, part := range parts {
@@ -68,12 +72,11 @@ func getParts(str string, maxW int, drawer *font.Drawer) []string {
 	return res[:itemCount]
 }
 
-func writeWithFont(img draw.Image, text string) {
+func writeWithFont(img draw.Image, text, delimiter, fontFile string, fontSizeFactor int, bottomY bool) {
 	const (
-		fontSizeFactor = 6
-		middleFactor   = 2
-		margin         = 10 * 2
-		dpiFactor      = dpi / 72
+		middleFactor = 2
+		margin       = 10 * 2
+		dpiFactor    = dpi / 72
 	)
 
 	// Read the font data.
@@ -94,10 +97,17 @@ func writeWithFont(img draw.Image, text string) {
 		}),
 	}
 
-	parts := getParts(text, img.Bounds().Dx()-margin, drawer)
+	parts := getParts(text, delimiter, img.Bounds().Dx()-margin, drawer)
 	diffY := int(math.Ceil(size * spacing * dpiFactor))
 	coordY := 10 + int(math.Ceil(size*dpiFactor))
-	coordY += int((float64(img.Bounds().Dy()) - (size * float64(len(parts)))) / middleFactor)
+
+	if !bottomY {
+		// center text
+		coordY += int((float64(img.Bounds().Dy()) - (size * float64(len(parts)))) / middleFactor)
+	} else {
+		// text to bottom
+		coordY += int((float64(img.Bounds().Dy()) - size - margin*2))
+	}
 
 	for _, part := range parts {
 		drawer.Dot = fixed.Point26_6{
@@ -126,7 +136,12 @@ func GenerateThumbnail(post *base.Post, src, target string) {
 	if drawImg, ok := img.(draw.Image); ok {
 		myGray := color.RGBA{0, 0, 0, 100} //  R, G, B, Alpha
 		draw.Draw(drawImg, drawImg.Bounds(), &image.Uniform{myGray}, image.Point{}, draw.Over)
-		writeWithFont(drawImg, post.Title)
+
+		fontSizeFactor := 6
+		writeWithFont(drawImg, post.Title, " ", boldFontFile, fontSizeFactor, false)
+
+		fontSizeFactor = 22
+		writeWithFont(drawImg, "="+post.Author+"=", "", regFontFile, fontSizeFactor, true)
 
 		out := try.To1(os.Create(target + ".png"))
 		defer out.Close()
