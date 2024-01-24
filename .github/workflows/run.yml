@@ -27,6 +27,11 @@ jobs:
           source ./data/.envrc
           gh secret set X_REFRESH_TOKEN --body "$NEW_X_REFRESH_TOKEN"
         env:
+          CLOUD_BUCKET_URL: ${{ secrets.CLOUD_BUCKET_URL }}
+          CLOUD_BUCKET_NAME: ${{ secrets.CLOUD_BUCKET_NAME }}
+          CLOUD_ACCOUNT_ID: ${{ secrets.CLOUD_ACCOUNT_ID }}
+          CLOUD_ACCESS_KEY_ID: ${{ secrets.CLOUD_ACCESS_KEY_ID }}
+          CLOUD_ACCESS_KEY_SECRET: ${{ secrets.CLOUD_ACCESS_KEY_SECRET }}
           MASTODON_SERVER: ${{ secrets.MASTODON_SERVER }}
           MASTODON_CLIENT_ID: ${{ secrets.MASTODON_CLIENT_ID }}
           MASTODON_SECRET_KEY: ${{ secrets.MASTODON_SECRET_KEY }}
