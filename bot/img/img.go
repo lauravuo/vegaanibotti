@@ -60,7 +60,12 @@ func getParts(str string, maxW int, drawer *font.Drawer) []string {
 		res = append(res, orig[removeIndex+1:]...)
 	}
 
-	return res[:4]
+	itemCount := len(res)
+	if itemCount > maxRows {
+		itemCount = maxRows
+	}
+
+	return res[:itemCount]
 }
 
 func writeWithFont(img draw.Image, text string) {
