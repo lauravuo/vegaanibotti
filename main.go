@@ -10,6 +10,11 @@ import (
 	"github.com/lauravuo/vegaanibotti/bot/img"
 )
 
+const (
+	boldFontFile = "./bot/img/font/Amatic_SC/AmaticSC-Bold.ttf"
+	regFontFile  = "./bot/img/font/Amatic_SC/AmaticSC-Regular.ttf"
+)
+
 func main() {
 	fetchOnly := false
 	if len(os.Args) > 1 {
@@ -29,7 +34,13 @@ func main() {
 
 		// Generate and upload image
 		bucketURL := os.Getenv("CLOUD_BUCKET_URL")
-		imageFile, smallImageFile := img.GenerateThumbnail(&chosenPost, "./bot/img/vegaanibotti.png", "image")
+		imageFile, smallImageFile := img.GenerateThumbnail(
+			&chosenPost,
+			"./bot/img/vegaanibotti.png",
+			"image",
+			boldFontFile,
+			regFontFile,
+		)
 		paths := img.UploadToCloud([]string{imageFile, smallImageFile})
 		chosenPost.ImageURL = bucketURL + "/" + paths[0]
 		chosenPost.ThumbnailURL = bucketURL + "/" + paths[1]

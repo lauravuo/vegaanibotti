@@ -25,10 +25,8 @@ import (
 )
 
 const (
-	dpi          = 72.0 // screen resolution in Dots Per Inch
-	boldFontFile = "./font/Amatic_SC/AmaticSC-Bold.ttf"
-	regFontFile  = "./font/Amatic_SC/AmaticSC-Regular.ttf"
-	spacing      = 0.9 // line spacing (e.g. 2 means double spaced)
+	dpi     = 72.0 // screen resolution in Dots Per Inch
+	spacing = 0.9  // line spacing (e.g. 2 means double spaced)
 )
 
 //nolint:gocognit,gocyclo,cyclop
@@ -152,7 +150,12 @@ func getImageFromFilePath(filePath string) image.Image {
 	return img
 }
 
-func GenerateThumbnail(post *base.Post, src, target string) (imagePath, smallImagePath string) {
+func GenerateThumbnail(
+	post *base.Post,
+	src,
+	target,
+	boldFontFile,
+	regFontFile string) (imagePath, smallImagePath string) {
 	const smallFactor = 3
 
 	img := getImageFromFilePath(src)
