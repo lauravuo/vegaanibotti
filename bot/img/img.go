@@ -155,7 +155,8 @@ func GenerateThumbnail(
 	src,
 	target,
 	boldFontFile,
-	regFontFile string) (imagePath, smallImagePath string) {
+	regFontFile string,
+) (imagePath, smallImagePath string) {
 	const smallFactor = 3
 
 	img := getImageFromFilePath(src)
