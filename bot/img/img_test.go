@@ -12,6 +12,8 @@ import (
 
 const (
 	testDataPath = "./test_data"
+	boldFontFile = "./font/Amatic_SC/AmaticSC-Bold.ttf"
+	regFontFile  = "./font/Amatic_SC/AmaticSC-Regular.ttf"
 )
 
 func setup() {
@@ -45,7 +47,8 @@ func TestGenerateThumbnail(t *testing.T) {
 		Author:      "A very very very long author", //nolint:dupword
 	}
 
-	path1, path2 := img.GenerateThumbnail(&post, "./vegaanibotti.png", testDataPath+"/thumbnail")
+	path1, path2 := img.GenerateThumbnail(
+		&post, "./vegaanibotti.png", testDataPath+"/thumbnail", boldFontFile, regFontFile)
 
 	if path1 == "" {
 		t.Error("Invalid image path")
