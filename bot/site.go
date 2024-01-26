@@ -28,10 +28,10 @@ func (s *Site) PostToSite(post *base.Post) error {
 
 	content := fmt.Sprintf(`---
 title: "%s"
-image: "./vegaanibotti.png"
+image: "%s"
 date: %s
 receipt_url: "%s"
----`, post.Title, date, post.URL,
+---`, post.Title, post.ThumbnailURL, date, post.URL,
 	)
 
 	try.To(os.MkdirAll(folder, dirPermission))
