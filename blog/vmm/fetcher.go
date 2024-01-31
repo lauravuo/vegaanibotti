@@ -22,7 +22,7 @@ const UsedIDsPath = base.DataPath + "/vmm/used.json"
 
 const classStr = "class"
 
-func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
+func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, postURL string) {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "entry-title") {
 		_ = tokenizer.Next() // a-tag
 		_, moreAttr := tokenizer.TagName()
@@ -32,10 +32,10 @@ func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title
 		for moreAttr {
 			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
 			if string(attrKeyBytes) == "href" {
-				url = string(attrValueBytes)
+				postURL = string(attrValueBytes)
 				_ = tokenizer.Next() // a value
 
-				return tokenizer.Token().Data, url
+				return tokenizer.Token().Data, postURL
 			}
 		}
 	}
@@ -43,14 +43,15 @@ func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title
 	return "", ""
 }
 
-func getDescription(z *html.Tokenizer, attrKey, attrValue string) string {
+func getDescription(_ *html.Tokenizer, _, _ string) string {
 	return ""
 }
 
-func getImages(tokenizer *html.Tokenizer, attrKey, attrValue string) (thumbnail, image string) {
+func getImages(_ *html.Tokenizer, attrKey, attrValue string) (thumbnail, image string) {
 	if attrKey == "data-bgset" {
 		return attrValue, attrValue
 	}
+
 	return thumbnail, image
 }
 
@@ -80,9 +81,9 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.Hashtags = []string{}
 		}
 
-		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
+		if title, postURL := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
 			post.Title = title
-			post.URL = url
+			post.URL = postURL
 		}
 
 		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
@@ -96,19 +97,16 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 	}
 }
 
-func fetchPostsForCategory(category string) []base.Post {
-	// fetch all after maxID
-}
-
-func FetchNewPosts(
-	recipesFilePath string,
-	httpGetter func(string, string) ([]byte, error),
+func fetchPostsForCategory(
 	httpPoster func(string, url.Values, string) (data []byte, err error),
-	previewOnly bool,
-) (base.RecipeBank, error) {
-	posts, maxID := base.LoadExistingPosts(recipesFilePath)
+	nonce string,
+	category string,
+	maxID int64,
+) []base.Post {
+	posts := make([]base.Post, 0)
 	existingFound := false
 
+	// fetch all after maxID
 	fetchURL := "https://viimeistamuruamyoten.com/wp-admin/admin-ajax.php"
 
 	params := url.Values{}
@@ -118,9 +116,9 @@ func FetchNewPosts(
 	params.Add("template", "sidebar")
 	params.Add("ppp", "6")
 	params.Add("archivetype", "cat")
-	params.Add("archivevalue", "177") // vegan 232
+	params.Add("archivevalue", category) // vegan 232
 	params.Add("action", "penci_archive_more_post_ajax")
-	params.Add("nonce", "50fe87c6df")
+	params.Add("nonce", nonce)
 
 	index := 1
 
@@ -138,7 +136,7 @@ func FetchNewPosts(
 			params,
 			"",
 		)
-		if err != nil {
+		if err != nil || len(data) == 0 {
 			slog.Info("Stopped fetching", "round", index-1)
 
 			break
@@ -183,6 +181,54 @@ func FetchNewPosts(
 		}
 
 		index++
+	}
+
+	return posts
+}
+
+func FetchNewPosts(
+	recipesFilePath string,
+	httpGetter func(string, string) ([]byte, error),
+	httpPoster func(string, url.Values, string) (data []byte, err error),
+	previewOnly bool,
+) (base.RecipeBank, error) {
+	posts, maxID := base.LoadExistingPosts(recipesFilePath)
+
+	// find nonce for api request
+	htmlRes := string(try.To1(httpGetter("https://viimeistamuruamyoten.com/category/kasvispaaruoat/", "")))
+	findStr := "pcajaxamore_scroll = {\"nonce\":\""
+	startIndex := strings.Index(htmlRes, findStr)
+	htmlRes = htmlRes[startIndex+len(findStr):]
+	endIndex := strings.Index(htmlRes, "\"")
+
+	if endIndex < 0 {
+		endIndex = 0
+	}
+
+	nonce := htmlRes[:endIndex]
+
+	mainPosts := fetchPostsForCategory(httpPoster, nonce, "177", maxID)
+	if len(mainPosts) > 0 {
+		sort.Slice(mainPosts, func(i, j int) bool {
+			return mainPosts[i].ID > mainPosts[j].ID
+		})
+
+		mainMinID := mainPosts[len(mainPosts)-1].ID
+		veganPosts := fetchPostsForCategory(httpPoster, nonce, "232", mainMinID)
+		veganIDs := make(map[int64]bool)
+
+		for index := range veganPosts {
+			veganIDs[veganPosts[index].ID] = true
+		}
+
+		for index := range mainPosts {
+			mainPost := mainPosts[index]
+			if _, ok := veganIDs[mainPost.ID]; ok {
+				posts = append(posts, mainPost)
+			} else {
+				slog.Info("Skipping non-vegan recipe", "title", mainPost.Title)
+			}
+		}
 	}
 
 	sort.Slice(posts, func(i, j int) bool {

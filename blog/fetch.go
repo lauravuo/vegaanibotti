@@ -10,6 +10,7 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/cc"
 	"github.com/lauravuo/vegaanibotti/blog/kk"
 	"github.com/lauravuo/vegaanibotti/blog/vh"
+	"github.com/lauravuo/vegaanibotti/blog/vmm"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -26,9 +27,10 @@ type fetcher struct {
 
 func getFetchers() map[string]fetcher {
 	return map[string]fetcher{
-		"cc": {cc.FetchNewPosts, cc.RecipesPath, "Chocochili"},
-		"vh": {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
-		"kk": {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
+		"cc":  {cc.FetchNewPosts, cc.RecipesPath, "Chocochili"},
+		"vh":  {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
+		"kk":  {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
+		"vmm": {vmm.FetchNewPosts, vmm.RecipesPath, "Viimeistä murua myöten"},
 	}
 }
 

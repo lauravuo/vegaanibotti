@@ -2,7 +2,6 @@ package vmm_test
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"os"
 	"testing"
@@ -15,8 +14,11 @@ const testDataPath = "./test_data/"
 
 var errNotFound = errors.New("not found")
 
-func poster(url string, params url.Values, _ string) ([]byte, error) {
-	fmt.Println(params.Get("offset"))
+func getter(targetURL, _ string) ([]byte, error) {
+	return []byte("pcajaxamore_scroll = {\"nonce\":\"nonce\""), nil
+}
+
+func poster(_ string, params url.Values, _ string) ([]byte, error) {
 	if params.Get("offset") == "0" {
 		data := try.To1(os.ReadFile("./test_data.txt"))
 
@@ -48,7 +50,7 @@ func TestMain(m *testing.M) {
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
-	recipes, err := vmm.FetchNewPosts("./test_data/recipes.json", nil, poster, false)
+	recipes, err := vmm.FetchNewPosts("./test_data/recipes.json", getter, poster, false)
 	if err != nil {
 		t.Errorf("Expected success, got: %s", err)
 	}
@@ -74,7 +76,8 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Mismatch with post desc")
 	}
 
-	if post.ThumbnailURL != "https://viimeistamuruamyoten.com/wp-content/uploads/2021/10/vegechili-chili-sin-carne-enchiladat-vaaka-585x390.jpg" {
+	if post.ThumbnailURL !=
+		"https://viimeistamuruamyoten.com/wp-content/uploads/2021/10/vegechili-chili-sin-carne-enchiladat-vaaka-585x390.jpg" {
 		t.Errorf("Mismatch with post thumbnail")
 	}
 

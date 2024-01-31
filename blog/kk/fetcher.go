@@ -79,7 +79,7 @@ func (r *Recipe) ToPost() base.Post {
 func FetchNewPosts(
 	recipesFilePath string,
 	_ func(string, string) ([]byte, error),
-	httpPoster func(string, url.Values, string) (data []byte, err error),
+	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	urlRes := string(try.To1(
