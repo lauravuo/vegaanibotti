@@ -14,7 +14,7 @@ const testDataPath = "./test_data/"
 
 var errNotFound = errors.New("not found")
 
-func getter(targetURL, _ string) ([]byte, error) {
+func getter(_, _ string) ([]byte, error) {
 	return []byte("pcajaxamore_scroll = {\"nonce\":\"nonce\""), nil
 }
 

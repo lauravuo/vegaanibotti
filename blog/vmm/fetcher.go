@@ -97,6 +97,7 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 	}
 }
 
+//nolint:cyclop
 func fetchPostsForCategory(
 	httpPoster func(string, url.Values, string) (data []byte, err error),
 	nonce string,
