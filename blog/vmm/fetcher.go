@@ -102,6 +102,7 @@ func fetchPostsForCategory(
 	nonce string,
 	category string,
 	maxID int64,
+	addMax bool,
 ) []base.Post {
 	posts := make([]base.Post, 0)
 	existingFound := false
@@ -116,7 +117,7 @@ func fetchPostsForCategory(
 	params.Add("template", "sidebar")
 	params.Add("ppp", "6")
 	params.Add("archivetype", "cat")
-	params.Add("archivevalue", category) // vegan 232
+	params.Add("archivevalue", category)
 	params.Add("action", "penci_archive_more_post_ajax")
 	params.Add("nonce", nonce)
 
@@ -154,7 +155,7 @@ func fetchPostsForCategory(
 
 			if post.IsValid() {
 				existingFound = post.ID <= maxID
-				if !existingFound {
+				if !existingFound || addMax {
 					if _, ok := added[post.ID]; !ok {
 						tags := post.Hashtags
 						post.Hashtags = make([]string, 0)
@@ -176,6 +177,10 @@ func fetchPostsForCategory(
 						added[post.ID] = true
 						post = &base.Post{}
 					}
+				}
+
+				if existingFound {
+					break
 				}
 			}
 		}
@@ -207,14 +212,14 @@ func FetchNewPosts(
 
 	nonce := htmlRes[:endIndex]
 
-	mainPosts := fetchPostsForCategory(httpPoster, nonce, "177", maxID)
+	mainPosts := fetchPostsForCategory(httpPoster, nonce, "177", maxID, false)
 	if len(mainPosts) > 0 {
 		sort.Slice(mainPosts, func(i, j int) bool {
 			return mainPosts[i].ID > mainPosts[j].ID
 		})
 
 		mainMinID := mainPosts[len(mainPosts)-1].ID
-		veganPosts := fetchPostsForCategory(httpPoster, nonce, "232", mainMinID)
+		veganPosts := fetchPostsForCategory(httpPoster, nonce, "232", mainMinID, true)
 		veganIDs := make(map[int64]bool)
 
 		for index := range veganPosts {
