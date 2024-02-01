@@ -10,19 +10,20 @@ const (
 const lineFeed = "\n\n"
 
 type Post struct {
-	ID           int64    `json:"id"`
-	Author       string   `json:"-"`
-	ThumbnailURL string   `json:"thumbnail"`
-	ImageURL     string   `json:"image"`
-	Title        string   `json:"title"`
-	Description  string   `json:"desc"`
-	URL          string   `json:"url"`
-	Hashtags     []string `json:"hashtags"`
-	Added        bool     `json:"-"`
+	ID             int64    `json:"id"`
+	Author         string   `json:"-"`
+	ThumbnailURL   string   `json:"thumbnail"`
+	ImageURL       string   `json:"image"`
+	Title          string   `json:"title"`
+	HasDescription bool     `json:"-"`
+	Description    string   `json:"desc"`
+	URL            string   `json:"url"`
+	Hashtags       []string `json:"hashtags"`
+	Added          bool     `json:"-"`
 }
 
 func (p *Post) IsValid() bool {
-	return p.ID != 0 && p.Title != "" && p.Description != "" && p.URL != "" && p.ThumbnailURL != ""
+	return p.ID != 0 && p.Title != "" && p.URL != "" && p.ThumbnailURL != "" && (!p.HasDescription || p.Description != "")
 }
 
 func (p *Post) baseSummary() string {

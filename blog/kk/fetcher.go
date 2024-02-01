@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -78,6 +79,7 @@ func (r *Recipe) ToPost() base.Post {
 func FetchNewPosts(
 	recipesFilePath string,
 	_ func(string, string) ([]byte, error),
+	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	urlRes := string(try.To1(

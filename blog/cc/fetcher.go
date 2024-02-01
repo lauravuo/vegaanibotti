@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 	"sort"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 
 const classStr = "class"
 
-func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, url string) {
+func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, postURL string) {
 	if attrKey == classStr && attrValue == "entry-title" {
 		_ = tokenizer.Next() // a-tag
 		_, moreAttr := tokenizer.TagName()
@@ -27,10 +28,10 @@ func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title
 		for moreAttr {
 			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
 			if string(attrKeyBytes) == "href" {
-				url = string(attrValueBytes)
+				postURL = string(attrValueBytes)
 				_ = tokenizer.Next() // a value
 
-				return tokenizer.Token().Data, url
+				return tokenizer.Token().Data, postURL
 			}
 		}
 	}
@@ -122,9 +123,9 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.Hashtags = tagNames
 		}
 
-		if title, url := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
+		if title, postURL := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
 			post.Title = title
-			post.URL = url
+			post.URL = postURL
 		}
 
 		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
@@ -136,17 +137,20 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 			post.ImageURL = image
 		}
 	}
+
+	post.HasDescription = true
 }
 
 func FetchNewPosts(
 	recipesFilePath string,
 	httpGetter func(string, string) ([]byte, error),
+	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	posts, maxID := base.LoadExistingPosts(recipesFilePath)
 	existingFound := false
 
-	url := "https://chocochili.net/luokka/paaruoat/page/%d/"
+	blogURL := "https://chocochili.net/luokka/paaruoat/page/%d/"
 	index := 1
 
 	added := make(map[int64]bool)
@@ -154,7 +158,7 @@ func FetchNewPosts(
 	post := &base.Post{}
 
 	for !existingFound {
-		fetchURL := fmt.Sprintf(url, index)
+		fetchURL := fmt.Sprintf(blogURL, index)
 
 		slog.Info("Fetching URL", "url", fetchURL)
 

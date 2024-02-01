@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"sort"
 	"strings"
@@ -37,8 +38,8 @@ func getSecureURL(input string) string {
 }
 
 func (v *Recipe) ToPost() base.Post {
-	url := strings.Replace(v.Source.URL[0], "http://users.", "https://", 1)
-	url = strings.Replace(url, "https://users.", "https://", 1)
+	postURL := strings.Replace(v.Source.URL[0], "http://users.", "https://", 1)
+	postURL = strings.Replace(postURL, "https://users.", "https://", 1)
 	thumbnail := getSecureURL(v.Source.ImageURL[0])
 	image := strings.ReplaceAll(thumbnail, "styles/recipe_thumbnail/public/", "")
 	index := strings.LastIndex(image, "?")
@@ -46,7 +47,7 @@ func (v *Recipe) ToPost() base.Post {
 	return base.Post{
 		ID:           int64(v.Source.ID[0]),
 		Title:        v.Source.Title[0],
-		URL:          url,
+		URL:          postURL,
 		ImageURL:     image[:index],
 		ThumbnailURL: thumbnail,
 		Hashtags:     []string{"vegaanihaaste", "vegaani", "vegaaniresepti"},
@@ -68,10 +69,10 @@ type SearchResponse struct {
 func doSearch(count int, payload string) (searchRes SearchResponse, err error) {
 	defer err2.Handle(&err)
 
-	url := "https://vc-search.anima.dk/vc_fi_recipes/_msearch?"
-	slog.Info("Fetching URL", "url", url, "count", count)
+	searchURL := "https://vc-search.anima.dk/vc_fi_recipes/_msearch?"
+	slog.Info("Fetching URL", "url", searchURL, "count", count)
 	res := try.To1(
-		myhttp.DoJSONBytesRequest(url,
+		myhttp.DoJSONBytesRequest(searchURL,
 			http.MethodPost,
 			[]byte(fmt.Sprintf(payload, count)),
 			""),
@@ -85,6 +86,7 @@ func doSearch(count int, payload string) (searchRes SearchResponse, err error) {
 func FetchNewPosts(
 	recipesFilePath string,
 	_ func(string, string) ([]byte, error),
+	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	posts, maxID := base.LoadExistingPosts(recipesFilePath)

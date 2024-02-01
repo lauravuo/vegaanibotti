@@ -2,6 +2,7 @@ package blog
 
 import (
 	"log/slog"
+	"net/url"
 	"os"
 
 	"github.com/lainio/err2/try"
@@ -9,6 +10,7 @@ import (
 	"github.com/lauravuo/vegaanibotti/blog/cc"
 	"github.com/lauravuo/vegaanibotti/blog/kk"
 	"github.com/lauravuo/vegaanibotti/blog/vh"
+	"github.com/lauravuo/vegaanibotti/blog/vmm"
 	"github.com/lauravuo/vegaanibotti/myhttp"
 )
 
@@ -16,6 +18,7 @@ type fetcher struct {
 	fn func(
 		string,
 		func(string, string) ([]byte, error),
+		func(string, url.Values, string) (data []byte, err error),
 		bool,
 	) (base.RecipeBank, error)
 	recipesPath string
@@ -24,9 +27,10 @@ type fetcher struct {
 
 func getFetchers() map[string]fetcher {
 	return map[string]fetcher{
-		"cc": {cc.FetchNewPosts, cc.RecipesPath, "Chocochili"},
-		"vh": {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
-		"kk": {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
+		"cc":  {cc.FetchNewPosts, cc.RecipesPath, "Chocochili"},
+		"vh":  {vh.FetchNewPosts, vh.RecipesPath, "Vegaanihaaste"},
+		"kk":  {kk.FetchNewPosts, kk.RecipesPath, "Kasviskapina"},
+		"vmm": {vmm.FetchNewPosts, vmm.RecipesPath, "Viimeistä murua myöten"},
 	}
 }
 
@@ -44,6 +48,7 @@ func FetchNewPosts(
 			collection[entry.Name()] = try.To1(fetch.fn(
 				fetch.recipesPath,
 				myhttp.DoGetRequest,
+				myhttp.DoPostRequest,
 				previewOnly,
 			))
 		}

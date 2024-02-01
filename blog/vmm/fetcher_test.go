@@ -1,21 +1,25 @@
-package cc_test
+package vmm_test
 
 import (
 	"errors"
+	"net/url"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/lainio/err2/try"
-	"github.com/lauravuo/vegaanibotti/blog/cc"
+	"github.com/lauravuo/vegaanibotti/blog/vmm"
 )
 
 const testDataPath = "./test_data/"
 
 var errNotFound = errors.New("not found")
 
-func getter(url, _ string) ([]byte, error) {
-	if strings.Contains(url, "1") {
+func getter(_, _ string) ([]byte, error) {
+	return []byte("pcajaxamore_scroll = {\"nonce\":\"nonce\""), nil
+}
+
+func poster(_ string, params url.Values, _ string) ([]byte, error) {
+	if params.Get("offset") == "0" {
 		data := try.To1(os.ReadFile("./test_data.txt"))
 
 		return data, nil
@@ -46,41 +50,42 @@ func TestMain(m *testing.M) {
 func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
-	recipes, err := cc.FetchNewPosts("./test_data/recipes.json", getter, nil, false)
+	recipes, err := vmm.FetchNewPosts("./test_data/recipes.json", getter, poster, false)
 	if err != nil {
 		t.Errorf("Expected success, got: %s", err)
 	}
 
-	if len(recipes.Posts) != 10 {
-		t.Errorf("Expected to find 10 posts, got %d posts.", len(recipes.Posts))
+	if len(recipes.Posts) != 6 {
+		t.Errorf("Expected to find 6 posts, got %d posts.", len(recipes.Posts))
 	}
 
 	post := recipes.Posts[0]
-	if post.ID != 19236 {
+	if post.ID != 16465 {
 		t.Errorf("Mismatch with post ID")
 	}
 
-	if post.Title != "Helppo vegemureke" {
+	if post.Title != "Haudutettu vegechili – chili sin carnella täytetyt enchiladat" {
 		t.Errorf("Mismatch with post title")
 	}
 
-	if post.URL != "https://chocochili.net/2023/12/helppo-vegemureke/" {
+	if post.URL != "https://viimeistamuruamyoten.com/haudutettu-vegechili-chili-sin-carnella-taytetyt-enchiladat/" {
 		t.Errorf("Mismatch with post url")
 	}
 
-	if post.Description != "Vegaaninen mureke sopii myös joulupöytään!" {
+	if post.Description != "" {
 		t.Errorf("Mismatch with post desc")
 	}
 
-	if post.ThumbnailURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-300x200.jpg" {
+	if post.ThumbnailURL !=
+		"https://viimeistamuruamyoten.com/wp-content/uploads/2021/10/vegechili-chili-sin-carne-enchiladat-vaaka-585x390.jpg" {
 		t.Errorf("Mismatch with post thumbnail")
 	}
 
-	if post.ImageURL != "https://chocochili.net/app/uploads/2023/12/helppo-vegemureke-2-700x470.jpg" {
+	if post.ImageURL != post.ThumbnailURL {
 		t.Errorf("Mismatch with post image: " + post.ImageURL)
 	}
 
-	if len(post.Hashtags) != 6 {
+	if len(post.Hashtags) != 3 {
 		t.Errorf("Mismatch with post hashtags")
 	}
 
