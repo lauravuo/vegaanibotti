@@ -32,9 +32,18 @@ func (p *Post) baseSummary() string {
 		"#" + strings.Join(p.Hashtags, " #")
 }
 
+func (p *Post) DescriptionQuote() string {
+	desc := p.Description
+	if desc != "" {
+		desc = "\"" + desc + "\""
+	}
+
+	return desc
+}
+
 func (p *Post) Summary() string {
 	return p.Title + lineFeed +
-		p.Description + lineFeed +
+		p.DescriptionQuote() + lineFeed +
 		p.URL + lineFeed +
 		"#" + strings.Join(p.Hashtags, " #")
 }
