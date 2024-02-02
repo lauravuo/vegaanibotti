@@ -24,8 +24,8 @@ const classStr = "class"
 
 func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, postURL string) {
 	if attrKey == classStr && strings.HasPrefix(attrValue, "entry-title") {
-
 		var tagName []byte
+
 		var moreAttr bool
 
 		for len(tagName) == 0 {
@@ -63,7 +63,6 @@ func getImages(_ *html.Tokenizer, _, _ string) (thumbnail, image string) {
 
 func getID(tagName, attrKey, attrValue string) (postID int64, isVegan, isTip bool) {
 	if tagName == "article" && attrKey == classStr {
-
 		parts := strings.Split(attrValue, " ")
 
 		for _, part := range parts {
