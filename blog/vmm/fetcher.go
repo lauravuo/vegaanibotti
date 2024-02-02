@@ -160,7 +160,7 @@ func fetchPostsForCategory(
 					if _, ok := added[post.ID]; !ok {
 						tags := post.Hashtags
 						post.Hashtags = make([]string, 0)
-						post.Hashtags = append(post.Hashtags, []string{"viimeistämuruamyöden", "vegaani", "vegaaniresepti"}...)
+						post.Hashtags = append(post.Hashtags, []string{"viimeistämuruamyöten", "vegaani", "vegaaniresepti"}...)
 						post.Hashtags = append(post.Hashtags, tags...)
 						post.Added = true
 						posts = append(posts, *post)
