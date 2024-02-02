@@ -29,6 +29,27 @@ const (
 	spacing = 0.9  // line spacing (e.g. 2 means double spaced)
 )
 
+func getRows(str, delimiter string) []string {
+	prefix := strings.Split(str, "(")
+	res := make([]string, 0)
+
+	if len(prefix) > 1 {
+		res = append(res, strings.Split(strings.TrimSpace(prefix[0]), delimiter)...)
+		suffix := strings.Split(prefix[1], ")")
+
+		res = append(res, "("+suffix[0]+")")
+
+		if len(suffix) > 0 {
+			lastStr := strings.TrimSpace(suffix[1])
+			if lastStr != "" {
+				res = append(res, strings.Split(lastStr, delimiter)...)
+			}
+		}
+	}
+
+	return res
+}
+
 //nolint:gocognit,gocyclo,cyclop
 func getParts(str, delimiter string, maxW int, drawer *font.Drawer) []string {
 	const maxRows = 4
@@ -37,7 +58,7 @@ func getParts(str, delimiter string, maxW int, drawer *font.Drawer) []string {
 		return []string{str}
 	}
 
-	parts := strings.Split(str, delimiter)
+	parts := getRows(str, delimiter)
 	res := make([]string, 0)
 
 	for _, part := range parts {
