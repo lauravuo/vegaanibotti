@@ -22,6 +22,12 @@ func getter(targetURL, _ string) ([]byte, error) {
 		return data, nil
 	}
 
+	if strings.Contains(targetURL, "2") {
+		data := try.To1(os.ReadFile("./test_data_2.txt"))
+
+		return data, nil
+	}
+
 	return nil, errNotFound
 }
 
@@ -56,8 +62,8 @@ func TestFetchNewPosts(t *testing.T) {
 		t.Errorf("Expected success, got: %s", err)
 	}
 
-	if len(recipes.Posts) != 10 {
-		t.Errorf("Expected to find 10 posts, got %d posts.", len(recipes.Posts))
+	if len(recipes.Posts) != 15 {
+		t.Errorf("Expected to find 15 posts, got %d posts.", len(recipes.Posts))
 	}
 
 	post := recipes.Posts[0]
