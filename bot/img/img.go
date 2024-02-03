@@ -49,6 +49,8 @@ func getRows(str, delimiter string) []string {
 				res = append(res, strings.Split(lastStr, delimiter)...)
 			}
 		}
+	} else {
+		res = strings.Split(str, delimiter)
 	}
 
 	return res
