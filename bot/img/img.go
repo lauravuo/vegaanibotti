@@ -30,6 +30,10 @@ const (
 )
 
 func getRows(str, delimiter string) []string {
+	if strings.Contains(str, "–") {
+		str = strings.Split(str, "–")[0]
+	}
+
 	prefix := strings.Split(str, "(")
 	res := make([]string, 0)
 

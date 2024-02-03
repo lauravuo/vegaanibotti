@@ -22,71 +22,18 @@ const UsedIDsPath = base.DataPath + "/vv/used.json"
 
 const classStr = "class"
 
-func getTitleAndURL(tokenizer *html.Tokenizer, attrKey, attrValue string) (title, postURL string) {
-	if attrKey == classStr && strings.HasPrefix(attrValue, "entry-title") {
-		var tagName []byte
-
-		var moreAttr bool
-
-		for len(tagName) == 0 {
-			tt := tokenizer.Next() // a-tag
-			if tt == html.ErrorToken {
-				break
-			}
-
-			tagName, moreAttr = tokenizer.TagName()
-		}
-
-		var attrKeyBytes, attrValueBytes []byte
-
-		for moreAttr {
-			attrKeyBytes, attrValueBytes, moreAttr = tokenizer.TagAttr()
-			if string(attrKeyBytes) == "href" {
-				postURL = string(attrValueBytes)
-				_ = tokenizer.Next() // a value
-
-				return tokenizer.Token().Data, postURL
-			}
-		}
-	}
-
-	return "", ""
-}
-
-func getDescription(_ *html.Tokenizer, _, _ string) string {
-	return ""
-}
-
-func getImages(_ *html.Tokenizer, _, _ string) (thumbnail, image string) {
-	return "", ""
-}
-
-func getID(tagName, attrKey, attrValue string) (postID int64, isVegan, isTip bool) {
-	if tagName == "article" && attrKey == classStr {
-		parts := strings.Split(attrValue, " ")
-
-		for _, part := range parts {
-			if part == "tag-vegaani" {
-				isVegan = true
-			} else if part == "tag-koosteet" || part == "category-vinkit" {
-				isTip = true
-			} else if strings.HasPrefix(part, "post-") {
-				postID, _ = strconv.ParseInt(strings.ReplaceAll(part, "post-", ""), 10, 64)
-			}
-		}
-
-		if postID > 0 {
-			return postID, isVegan, isTip
-		}
-	}
-
-	return 0, isVegan, isTip
-}
-
-func getPost(tokenizer *html.Tokenizer, post *base.Post) {
+//nolint:gocyclo,gocognit,cyclop
+func getPost(tokenizer *html.Tokenizer) *base.Post {
 	tagName, moreAttr := tokenizer.TagName()
 
+	const articleStr = "article"
+
 	var attrKey, attrValue []byte
+
+	isVegan := false
+	isTip := false
+
+	var postID int64
 
 	for moreAttr {
 		attrKey, attrValue, moreAttr = tokenizer.TagAttr()
@@ -94,29 +41,71 @@ func getPost(tokenizer *html.Tokenizer, post *base.Post) {
 		attrKeyStr := string(attrKey)
 		attrValueStr := string(attrValue)
 
-		if id, isVegan, isTip := getID(string(tagName), attrKeyStr, attrValueStr); id != 0 {
-			post.ID = id
-			post.Hashtags = []string{}
+		if string(tagName) == articleStr && attrKeyStr == classStr {
+			parts := strings.Split(attrValueStr, " ")
 
-			if !isVegan || isTip {
-				post.Hashtags = append(post.Hashtags, "remove")
+			for _, part := range parts {
+				if part == "tag-vegaani" {
+					isVegan = true
+				} else if part == "tag-koosteet" || part == "category-vinkit" {
+					isTip = true
+				} else if strings.HasPrefix(part, "post-") {
+					postID, _ = strconv.ParseInt(strings.ReplaceAll(part, "post-", ""), 10, 64)
+				}
+			}
+		}
+	}
+
+	//nolint:nestif
+	if isVegan && !isTip {
+		title := ""
+		postURL := ""
+
+		for title == "" && postURL == "" {
+			tt := tokenizer.Next()
+			tagName, _ := tokenizer.TagName()
+
+			if tt == html.ErrorToken || (tt == html.EndTagToken && string(tagName) == articleStr) {
+				break
+			}
+
+			attrKey, attrValue, _ = tokenizer.TagAttr()
+			if string(tagName) == "h2" && string(attrKey) == classStr && strings.HasPrefix(string(attrValue), "entry-title") {
+				tagName, _ := tokenizer.TagName()
+				for string(tagName) != "a" {
+					tt := tokenizer.Next()
+					tagName, _ = tokenizer.TagName()
+
+					if tt == html.ErrorToken || (tt == html.EndTagToken && string(tagName) == articleStr) {
+						break
+					}
+				}
+
+				if string(tagName) == "a" {
+					moreAttr := true
+					for moreAttr {
+						attrKey, attrValue, moreAttr = tokenizer.TagAttr()
+						if string(attrKey) == "href" {
+							postURL = string(attrValue)
+							_ = tokenizer.Next() // a value
+
+							title = tokenizer.Token().Data
+
+							break
+						}
+					}
+				}
 			}
 		}
 
-		if title, postURL := getTitleAndURL(tokenizer, attrKeyStr, attrValueStr); title != "" {
-			post.Title = title
-			post.URL = postURL
-		}
-
-		if desc := getDescription(tokenizer, attrKeyStr, attrValueStr); desc != "" {
-			post.Description = desc
-		}
-
-		if thumbnail, image := getImages(tokenizer, attrKeyStr, attrValueStr); thumbnail != "" {
-			post.ThumbnailURL = thumbnail
-			post.ImageURL = image
+		return &base.Post{
+			ID:    postID,
+			Title: title,
+			URL:   postURL,
 		}
 	}
+
+	return nil
 }
 
 //nolint:cyclop,gocognit
@@ -133,8 +122,6 @@ func fetchPosts(
 	index := 1
 
 	added := make(map[int64]bool)
-
-	post := &base.Post{}
 
 	for !existingFound {
 		fetchURL := fmt.Sprintf(baseURL, index)
@@ -158,10 +145,10 @@ func fetchPosts(
 				break
 			}
 
-			getPost(tokenizer, post)
+			post := getPost(tokenizer)
 
 			//nolint:nestif
-			if post.IsValid() {
+			if post != nil && post.IsValid() {
 				existingFound = post.ID <= maxID
 				if !existingFound {
 					if _, ok := added[post.ID]; !ok {
@@ -185,8 +172,6 @@ func fetchPosts(
 
 							added[post.ID] = true
 						}
-
-						post = &base.Post{}
 					}
 				}
 

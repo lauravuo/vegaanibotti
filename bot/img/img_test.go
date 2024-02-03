@@ -39,7 +39,7 @@ func TestGenerateThumbnail(t *testing.T) {
 
 	post := base.Post{
 		ID:          1,
-		Title:       "title",
+		Title:       "Title",
 		Description: "description",
 		URL:         "https://example.com",
 		Hashtags:    []string{"food"},
