@@ -1,5 +1,6 @@
 baseURL = 'https://lauravuo.github.io/vegaanibotti/'
-languageCode = 'fi-FI'
+languageCode = 'fi_FI'
+defaultContentLanguage = "fi"
 title = 'vegaanibotti'
 theme = ["github.com/nicokaiser/hugo-theme-gallery/v2"]
 disableKinds = ["taxonomy", "term"]
