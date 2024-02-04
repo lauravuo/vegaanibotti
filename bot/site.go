@@ -31,7 +31,8 @@ title: "%s"
 image: "%s"
 date: %s
 receipt_url: "%s"
----`, post.Title, post.ThumbnailURL, date, post.URL,
+author: "%s"
+---`, post.Title, post.ThumbnailURL, date, post.URL, post.Author,
 	)
 
 	try.To(os.MkdirAll(folder, dirPermission))
