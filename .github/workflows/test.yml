@@ -35,7 +35,7 @@ jobs:
           GOCOVERDIR=coverage go run -cover . --fetch
           go tool covdata textfmt -i=coverage -o coverage-run.txt
       - name: upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
