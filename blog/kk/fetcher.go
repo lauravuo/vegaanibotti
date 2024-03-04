@@ -62,6 +62,10 @@ func (r *Recipe) ToPost() base.Post {
 	startIndex := strings.Index(r.Excerpt, ">")
 	endIndex := strings.LastIndex(r.Excerpt, "<")
 
+	if endIndex < 0 {
+		endIndex = len(r.Excerpt)
+	}
+
 	const baseImageURL = "https://www.kasviskapina.fi/_next/image?url=https://kasviskapinastor.blob.core.windows.net/images"
 
 	return base.Post{
