@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog/base"
 	"github.com/lauravuo/vegaanibotti/myhttp"
@@ -86,6 +87,8 @@ func FetchNewPosts(
 	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
+	defer err2.Catch("Failed to fetch recipes for kk")
+
 	urlRes := string(try.To1(
 		myhttp.DoGetRequest("https://www.kasviskapina.fi/", ""),
 	))
