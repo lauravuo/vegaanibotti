@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -23,6 +24,8 @@ import (
 const RecipesPath = base.DataPath + "/kk/recipes.json"
 
 const UsedIDsPath = base.DataPath + "/kk/used.json"
+
+var errFeed = errors.New("unable to parse feed")
 
 type Recipe struct {
 	ID            string `json:"id"`
@@ -87,12 +90,35 @@ func FetchNewPosts(
 	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
-	defer err2.Catch("Failed to fetch recipes for kk")
+	bank, err := doFetchNewPosts(recipesFilePath, previewOnly)
+
+	if err == nil {
+		return bank, nil
+	}
+
+	posts, _ := base.LoadExistingPosts(recipesFilePath)
+
+	return base.RecipeBank{
+		Posts:       posts,
+		UsedIDsPath: UsedIDsPath,
+	}, nil
+}
+
+func doFetchNewPosts(
+	recipesFilePath string,
+	previewOnly bool,
+) (bank base.RecipeBank, err error) {
+	defer err2.Handle(&err)
 
 	urlRes := string(try.To1(
 		myhttp.DoGetRequest("https://www.kasviskapina.fi/", ""),
 	))
 	endIndex := strings.Index(urlRes, "/_buildManifest.js")
+
+	if endIndex < 0 {
+		return bank, errFeed
+	}
+
 	startIndex := strings.LastIndex(urlRes[:endIndex], "/")
 
 	// No pagination currently?, fetch all at once
