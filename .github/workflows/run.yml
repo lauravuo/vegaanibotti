@@ -12,11 +12,17 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_KEY }}
       - name: checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{secrets.PAT}}
+          token: ${{ steps.generate_token.outputs.token }}
       - name: setup
         uses: actions/setup-go@v5
         with:
@@ -42,7 +48,7 @@ jobs:
           FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
           FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
           INSTAGRAM_BUSINESS_ACCOUNT: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT }}
-          GH_TOKEN: ${{secrets.PAT}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
       - name: commit
         run: |
           git config --global user.email "gh-actions"
@@ -55,4 +61,4 @@ jobs:
           url=$(gh pr create --fill)
           gh pr merge --auto --merge "$url"
         env:
-          GH_TOKEN: ${{secrets.PAT}}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
