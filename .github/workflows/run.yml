@@ -53,12 +53,9 @@ jobs:
         run: |
           git config --global user.email "gh-actions"
           git config --global user.name "gh-actions"
-          branch="store-changes-$(date +%s)"
-          git checkout -b $branch
+          git checkout main
           git add site
           git commit -a -m "Store changes to data."
-          git push --set-upstream origin $branch
-          url=$(gh pr create --fill)
-          gh pr merge --auto --merge "$url"
+          git push origin main
         env:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
