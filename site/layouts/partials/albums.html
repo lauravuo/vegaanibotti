@@ -1,5 +1,5 @@
 <div class="mx-auto mb-16 mt-8 grid max-w-screen-2xl grid-cols-1 gap-x-6 gap-y-8 px-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-  {{ range (.Paginator 50).Pages }}
+  {{ range .Paginator.Pages }}
   <a class="card card-compact group" href="{{ .Params.receipt_url }}" title="{{ .Title }}">
     <figure class="rounded-2xl shadow-sm transition-all duration-300 hover:shadow-lg group-hover:scale-[1.02]" style="background-color: 'transparent'">
       <picture>
@@ -15,6 +15,36 @@
       </p>
     </div>
   </a>
-
   {{ end }}
+</div>
+<style>
+.pagination {
+    display: flex;
+    list-style: none;
+    border-radius: .25rem;
+    padding: 0;
+    justify-content: center;
+}
+
+.page-link {
+    position: relative;
+    display: block;
+    padding: .75rem 1rem;
+    margin-left: -1px;
+    line-height: 1.25;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    cursor: auto;
+}
+
+.page-item.active .page-link {
+    z-index: 1;
+    color: #6c757d;
+}
+</style>
+<div class="">
+  {{ template "_internal/pagination.html" . }}
 </div>

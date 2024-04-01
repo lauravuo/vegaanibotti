@@ -1,4 +1,4 @@
-<header class="footer footer-center p-10 opacity-60">
+<header class="footer footer-center py-2 opacity-60">
   <nav class="grid grid-flow-col gap-4">
     {{ range .Site.Menus.footer }}
       <a class="link link-hover" {{ with .Params.rel -}}rel="{{ . }}"{{ end -}} href="{{ .URL }}">
