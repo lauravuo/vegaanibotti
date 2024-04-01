@@ -246,14 +246,17 @@ func UploadToCloud(filePaths []string) []string {
 
 	for _, filePath := range filePaths {
 		file := try.To1(os.Open(filePath))
-		small := ""
+
+		var path string
 
 		if strings.Contains(filePath, "small") {
-			small = "_small"
+			path = year + "/" + month + "/" + date + "_small.png"
+		} else {
+			// lifecycle rule erases large images shortly
+			path = year + "/" + month + "/large_" + date + ".png"
 		}
 
 		contentType := "image/png"
-		path := year + "/" + month + "/" + date + small + ".png"
 
 		_ = try.To1(client.PutObject(context.TODO(), &s3.PutObjectInput{
 			Bucket:      aws.String(bucketName),
