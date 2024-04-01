@@ -4,6 +4,7 @@ defaultContentLanguage = "fi"
 title = 'vegaanibotti'
 theme = ["github.com/nicokaiser/hugo-theme-gallery/v2"]
 disableKinds = ["taxonomy", "term"]
+paginate = "50"
 
 [params]
   title = "vegaanibotti"
@@ -12,19 +13,19 @@ disableKinds = ["taxonomy", "term"]
 
 [menu]
 [[menu.footer]]
-  name = "Facebook"
+  name = "FB"
   url = "https://www.facebook.com/profile.php?id=61555117441177"
 [[menu.footer]]
-  name = "Instagram"
+  name = "IG"
   url = "https://www.instagram.com/vegaanibotti"
 [[menu.footer]]
-  name = "Mastodon"
+  name = "mstdn"
   url = "https://botsin.space/@vegaanibotti"
 [[menu.footer]]
   name = "X"
   url = "https://twitter.com/vegaanibotti"
 [[menu.footer]]
-  name = "GitHub"
+  name = "GH"
   url = "https://github.com/lauravuo/vegaanibotti"
 [[menu.footer]]
   name = "RSS"
