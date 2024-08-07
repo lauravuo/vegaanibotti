@@ -12,7 +12,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lainio/err2 v1.0.0
 	github.com/mattn/go-mastodon v0.0.8
-	golang.org/x/image v0.18.0
+	golang.org/x/image v0.19.0
 	golang.org/x/net v0.28.0
 	golang.org/x/text v0.17.0
 )
