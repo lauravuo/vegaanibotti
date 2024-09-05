@@ -14,7 +14,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.8
 	golang.org/x/image v0.19.0
 	golang.org/x/net v0.28.0
-	golang.org/x/text v0.17.0
+	golang.org/x/text v0.18.0
 )
 
 require (
