@@ -38,8 +38,8 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF0
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/gorilla/websocket v1.5.1 h1:gmztn0JnHVt9JZquRuzLw3g4wouNVzKL15iLr/zn/QY=
 github.com/gorilla/websocket v1.5.1/go.mod h1:x3kM2JMyaluk02fnUJpQuwD2dCS5NDG2ZHL0uE0tcaY=
-github.com/lainio/err2 v1.0.0 h1:ndyaIeh4TSryI7sJRc9O6frgEnIUyGJ8R/9FE+kdaKg=
-github.com/lainio/err2 v1.0.0/go.mod h1:glTVV2qNFbBy6WzZFDP2G5BqMiZI58cudp588cEgCuM=
+github.com/lainio/err2 v1.1.0 h1:bh0vPtUZVLnOkoi56J9MAjeFHxkC+RqsUAjE5Q7TzNY=
+github.com/lainio/err2 v1.1.0/go.mod h1:glTVV2qNFbBy6WzZFDP2G5BqMiZI58cudp588cEgCuM=
 github.com/mattn/go-mastodon v0.0.8 h1:UgKs4SmQ5JeawxMIPP7NQ9xncmOXA+5q6jYk4erR7vk=
 github.com/mattn/go-mastodon v0.0.8/go.mod h1:8YkqetHoAVEktRkK15qeiv/aaIMfJ/Gc89etisPZtHU=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=
