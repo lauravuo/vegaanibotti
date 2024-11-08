@@ -12,9 +12,9 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lainio/err2 v1.1.0
 	github.com/mattn/go-mastodon v0.0.9
-	golang.org/x/image v0.21.0
+	golang.org/x/image v0.22.0
 	golang.org/x/net v0.30.0
-	golang.org/x/text v0.19.0
+	golang.org/x/text v0.20.0
 )
 
 require (
