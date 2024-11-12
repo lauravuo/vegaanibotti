@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.16
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.3
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/lainio/err2 v1.1.0
+	github.com/lainio/err2 v1.2.0
 	github.com/mattn/go-mastodon v0.0.9
 	golang.org/x/image v0.22.0
 	golang.org/x/net v0.31.0
