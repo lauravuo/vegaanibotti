@@ -45,19 +45,16 @@ func main() {
 		chosenPost.ImageURL = bucketURL + "/" + paths[0]
 		chosenPost.ThumbnailURL = bucketURL + "/" + paths[1]
 
-		m := bot.InitMastodon()
-		try.To(m.PostToMastodon(&chosenPost))
-
-		x := bot.InitX()
-		try.To(x.PostToX(&chosenPost))
-
-		f := bot.InitFB()
-		try.To(f.PostToFB(&chosenPost))
-
 		s := bot.InitSite()
 		try.To(s.PostToSite(&chosenPost))
 
 		i := bot.InitIG()
 		try.To(i.PostToIG(&chosenPost))
+
+		f := bot.InitFB()
+		try.To(f.PostToFB(&chosenPost))
+
+		x := bot.InitX()
+		try.To(x.PostToX(&chosenPost))
 	}
 }
