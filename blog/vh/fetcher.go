@@ -69,7 +69,7 @@ type SearchResponse struct {
 func doSearch(count int, payload string) (searchRes SearchResponse, err error) {
 	defer err2.Handle(&err)
 
-	searchURL := "https://vc-search.anima.dk/vc_fi_recipes/_msearch?"
+	searchURL := "https://vegaanihaaste.fi/9201/_msearch?"
 	slog.Info("Fetching URL", "url", searchURL, "count", count)
 	res := try.To1(
 		myhttp.DoJSONBytesRequest(searchURL,
