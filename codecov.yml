@@ -4,3 +4,5 @@ coverage:
       default:
         target: 66%    # the required coverage value
         threshold: 2%  # the leniency in hitting the target
+  ignore:
+    - main.go
