@@ -4,6 +4,6 @@
 
 GitHub Actions based bot for posting vegan recipes
 
-Home page: https://lauravuo.github.io/vegaanibotti/
-IG: https://www.instagram.com/vegaanibotti
-FB: https://www.facebook.com/profile.php?id=61555117441177
+* Home page: https://lauravuo.github.io/vegaanibotti/
+* IG: https://www.instagram.com/vegaanibotti
+* FB: https://www.facebook.com/profile.php?id=61555117441177
