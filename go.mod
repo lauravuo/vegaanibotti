@@ -2,15 +2,13 @@ module github.com/lauravuo/vegaanibotti
 
 go 1.21
 
-toolchain go1.21.0
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.27.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.16
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.16
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.54.3
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/lainio/err2 v1.2.1
+	github.com/lainio/err2 v1.2.2
 	github.com/mattn/go-mastodon v0.0.9
 	golang.org/x/image v0.24.0
 	golang.org/x/net v0.35.0
