@@ -4,7 +4,9 @@ defaultContentLanguage = "fi"
 title = 'vegaanibotti'
 theme = ["github.com/nicokaiser/hugo-theme-gallery/v2"]
 disableKinds = ["taxonomy", "term"]
-paginate = "50"
+
+[pagination]
+  pagerSize = 50
 
 [params]
   title = "vegaanibotti"
