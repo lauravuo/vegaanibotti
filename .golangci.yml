@@ -70,10 +70,11 @@ linters:
     - errchkjson
     - errname
     - errorlint
-    - execinquery
+    - errchkjson
+    - errname
+    - errorlint
     - exhaustive
 #    - exhaustruct
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
@@ -93,7 +94,6 @@ linters:
     - gofumpt
     - goheader
     - goimports
-    - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname

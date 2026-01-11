@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/lainio/err2/try"
@@ -14,6 +15,14 @@ type Site struct{}
 
 func InitSite() *Site {
 	return &Site{}
+}
+
+// escapeYAMLString escapes double quotes and backslashes in a string for use in YAML.
+func escapeYAMLString(s string) string {
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "\"", "\\\"")
+
+	return s
 }
 
 func (s *Site) PostToSite(post *base.Post) error {
@@ -32,7 +41,12 @@ image: "%s"
 date: %s
 receipt_url: "%s"
 author: "%s"
----`, post.Title, post.ThumbnailURL, date, post.URL, post.Author,
+---`,
+		escapeYAMLString(post.Title),
+		escapeYAMLString(post.ThumbnailURL),
+		date,
+		escapeYAMLString(post.URL),
+		escapeYAMLString(post.Author),
 	)
 
 	try.To(os.MkdirAll(folder, dirPermission))
