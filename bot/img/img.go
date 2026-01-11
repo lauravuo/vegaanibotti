@@ -224,8 +224,7 @@ func UploadToCloud(filePaths []string) []string {
 	accountID := os.Getenv("CLOUD_ACCOUNT_ID")
 	accessKeyID := os.Getenv("CLOUD_ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("CLOUD_ACCESS_KEY_SECRET")
-	//nolint:revive
-	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
 		}, nil
