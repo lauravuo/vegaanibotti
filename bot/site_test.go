@@ -1,26 +1,36 @@
-package bot
+package bot_test
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/lauravuo/vegaanibotti/blog/base"
+	"github.com/lauravuo/vegaanibotti/bot"
 )
 
+//nolint:paralleltest // This test modifies global state (cwd) so it cannot run in parallel
 func TestPostToSite_EscapesQuotesInTitle(t *testing.T) {
-	site := InitSite()
+	site := bot.InitSite()
 
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
+
 	originalDir, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Chdir(originalDir)
+
+	defer func() {
+		_ = os.Chdir(originalDir)
+	}()
 
 	// Change to temp directory
-	if err := os.Chdir(tempDir); err != nil {
-		t.Fatal(err)
+	if chdirErr := os.Chdir(tempDir); chdirErr != nil {
+		t.Fatal(chdirErr)
 	}
 
 	post := &base.Post{
@@ -35,42 +45,7 @@ func TestPostToSite_EscapesQuotesInTitle(t *testing.T) {
 		t.Fatalf("PostToSite failed: %v", err)
 	}
 
-	// Read the generated file
-	// The file should be in ./site/content/YYYY/MM/YYYY-MM-DD.md
-	// We need to find it
-	entries, err := os.ReadDir("./site/content")
-	if err != nil {
-		t.Fatalf("Failed to read site/content: %v", err)
-	}
-
-	var content []byte
-	for _, yearDir := range entries {
-		if !yearDir.IsDir() {
-			continue
-		}
-		monthEntries, err := os.ReadDir("./site/content/" + yearDir.Name())
-		if err != nil {
-			continue
-		}
-		for _, monthDir := range monthEntries {
-			if !monthDir.IsDir() {
-				continue
-			}
-			files, err := os.ReadDir("./site/content/" + yearDir.Name() + "/" + monthDir.Name())
-			if err != nil {
-				continue
-			}
-			for _, file := range files {
-				if !file.IsDir() {
-					content, err = os.ReadFile("./site/content/" + yearDir.Name() + "/" + monthDir.Name() + "/" + file.Name())
-					if err != nil {
-						t.Fatalf("Failed to read generated file: %v", err)
-					}
-					break
-				}
-			}
-		}
-	}
+	content := findGeneratedFile(t, "./site/content")
 
 	if content == nil {
 		t.Fatal("No file was generated")
@@ -79,12 +54,46 @@ func TestPostToSite_EscapesQuotesInTitle(t *testing.T) {
 	contentStr := string(content)
 
 	// Check that quotes are properly escaped
-	if !contains(contentStr, `title: "Test \"quoted\" title"`) {
+	if !strings.Contains(contentStr, `title: "Test \"quoted\" title"`) {
 		t.Errorf("Expected escaped quotes in title, got: %s", contentStr)
 	}
 }
 
+func findGeneratedFile(t *testing.T, baseDir string) []byte {
+	t.Helper()
+
+	var foundContent []byte
+
+	err := filepath.WalkDir(baseDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".md") {
+			content, readErr := os.ReadFile(path)
+			if readErr != nil {
+				return fmt.Errorf("read file %s: %w", path, readErr)
+			}
+
+			foundContent = content
+
+			return filepath.SkipAll // Stop searching after finding the first markdown file
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Logf("Error walking directory: %v", err)
+
+		return nil
+	}
+
+	return foundContent
+}
+
 func TestEscapeYAMLString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		input    string
 		expected string
@@ -108,22 +117,10 @@ func TestEscapeYAMLString(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := escapeYAMLString(tt.input)
+		result := bot.EscapeYAMLString(tt.input)
+
 		if result != tt.expected {
 			t.Errorf("escapeYAMLString(%q) = %q, want %q", tt.input, result, tt.expected)
 		}
 	}
-}
-
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(s) > len(substr) && containsHelper(s, substr))
-}
-
-func containsHelper(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

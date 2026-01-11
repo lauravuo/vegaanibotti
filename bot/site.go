@@ -17,10 +17,11 @@ func InitSite() *Site {
 	return &Site{}
 }
 
-// escapeYAMLString escapes double quotes and backslashes in a string for use in YAML
+// escapeYAMLString escapes double quotes and backslashes in a string for use in YAML.
 func escapeYAMLString(s string) string {
 	s = strings.ReplaceAll(s, "\\", "\\\\")
 	s = strings.ReplaceAll(s, "\"", "\\\"")
+
 	return s
 }
 
