@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
+
 	"github.com/lauravuo/vegaanibotti/blog"
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )
@@ -148,62 +149,58 @@ func TestChooseNextPostSkipsEmptyBlog(t *testing.T) {
 	}
 }
 
-func TestChooseNextPostStaleUsedBlogIDs(t *testing.T) {
+func TestChooseNextPostWithPresetUsedIDs(t *testing.T) {
 	t.Parallel()
 
-	usedPath := testDataPath + "/used_stale.json"
-
-	// usedBlogIDsPath contains "kk" which has no posts - it should be filtered out
-	// so "cc" should still be selected
-	try.To(os.WriteFile(usedPath, []byte(`["kk"]`), base.WritePerm))
-
-	posts := base.Collection{
-		"cc": {
-			Posts: []base.Post{{
-				ID:          20,
-				Title:       "title",
-				Description: "description",
-				URL:         "https://example.com",
-				Hashtags:    []string{"food"},
-				Added:       true,
-			}},
-			UsedIDsPath: testDataPath + "/cc/used_stale.json",
+	tests := []struct {
+		name         string
+		usedPath     string
+		usedContent  string
+		postID       int64
+		expectedID   int64
+	}{
+		{
+			name:        "stale blog id filtered out",
+			usedPath:    testDataPath + "/used_stale.json",
+			usedContent: `["kk"]`,
+			postID:      20,
+			expectedID:  20,
+		},
+		{
+			name:        "all blogs used triggers reset",
+			usedPath:    testDataPath + "/used_reset.json",
+			usedContent: `["cc"]`,
+			postID:      30,
+			expectedID:  30,
 		},
 	}
 
-	nextPost := blog.ChooseNextPost(posts, usedPath)
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 
-	if nextPost.ID != 20 {
-		t.Errorf("Expected post id 20, got %d", nextPost.ID)
-	}
-}
+			try.To(os.WriteFile(testCase.usedPath, []byte(testCase.usedContent), base.WritePerm))
 
-func TestChooseNextPostAllBlogsUsedReset(t *testing.T) {
-	t.Parallel()
+			posts := base.Collection{
+				"cc": {
+					Posts: []base.Post{{
+						ID:          testCase.postID,
+						Title:       "title",
+						Description: "description",
+						URL:         "https://example.com",
+						Hashtags:    []string{"food"},
+						Added:       true,
+					}},
+					UsedIDsPath: testDataPath + "/cc/used_preset.json",
+				},
+			}
 
-	usedPath := testDataPath + "/used_reset.json"
+			nextPost := blog.ChooseNextPost(posts, testCase.usedPath)
 
-	// Write used blog IDs with "cc" already listed - all blogs used, should reset
-	try.To(os.WriteFile(usedPath, []byte(`["cc"]`), base.WritePerm))
-
-	posts := base.Collection{
-		"cc": {
-			Posts: []base.Post{{
-				ID:          30,
-				Title:       "title",
-				Description: "description",
-				URL:         "https://example.com",
-				Hashtags:    []string{"food"},
-				Added:       true,
-			}},
-			UsedIDsPath: testDataPath + "/cc/used_reset.json",
-		},
-	}
-
-	nextPost := blog.ChooseNextPost(posts, usedPath)
-
-	if nextPost.ID != 30 {
-		t.Errorf("Expected post id 30 after reset, got %d", nextPost.ID)
+			if nextPost.ID != testCase.expectedID {
+				t.Errorf("Expected post id %d, got %d", testCase.expectedID, nextPost.ID)
+			}
+		})
 	}
 }
 

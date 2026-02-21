@@ -6,15 +6,19 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
+
 	"github.com/lauravuo/vegaanibotti/blog/kk"
 )
 
-const testDataPath = "./test_data/"
+const (
+	testDataPath = "./test_data/"
+	kkBaseURL    = "https://www.kasviskapina.fi/"
+)
 
 var errTest = errors.New("test error")
 
 func getter(url, _ string) ([]byte, error) {
-	if url == "https://www.kasviskapina.fi/" {
+	if url == kkBaseURL {
 		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
 	}
 
@@ -28,7 +32,7 @@ func getterNoManifest(_, _ string) ([]byte, error) {
 }
 
 func getterNoPaaruoka(url, _ string) ([]byte, error) {
-	if url == "https://www.kasviskapina.fi/" {
+	if url == kkBaseURL {
 		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
 	}
 
