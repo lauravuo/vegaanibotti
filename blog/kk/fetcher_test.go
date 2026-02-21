@@ -17,7 +17,7 @@ func getter(url, _ string) ([]byte, error) {
 	if url == "https://www.kasviskapina.fi/" {
 		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
 	}
-	data := try.To1(os.ReadFile("./test.json"))
+	data := try.To1(os.ReadFile(testDataPath + "test.json"))
 
 	return data, nil
 }
