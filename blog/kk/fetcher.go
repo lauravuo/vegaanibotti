@@ -2,23 +2,19 @@ package kk
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"log/slog"
 	"net/url"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/lainio/err2"
 	"github.com/lainio/err2/try"
 	"github.com/lauravuo/vegaanibotti/blog/base"
-	"github.com/lauravuo/vegaanibotti/myhttp"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 const RecipesPath = base.DataPath + "/kk/recipes.json"
@@ -27,74 +23,83 @@ const UsedIDsPath = base.DataPath + "/kk/used.json"
 
 var errFeed = errors.New("unable to parse feed")
 
+// slugToID derives a stable int64 ID from a slug using FNV-1a hash.
+func slugToID(slug string) int64 {
+	h := fnv.New64a()
+	_, _ = h.Write([]byte(slug))
+	return int64(h.Sum64() & 0x7fffffffffffffff) // keep positive
+}
+
+type Image struct {
+	Filename string `json:"filename"`
+}
+
+type Images struct {
+	Featured Image `json:"featured"`
+}
+
+type Category struct {
+	Slug string `json:"slug"`
+}
+
+type Tag struct {
+	Slug string `json:"slug"`
+}
+
 type Recipe struct {
-	ID            string `json:"id"`
-	Title         string `json:"title"`
-	Excerpt       string `json:"excerpt"`
-	Slug          string `json:"slug"`
-	FeaturedImage struct {
-		Nodes struct {
-			Src string `json:"sourceUrl"`
-		} `json:"node"`
-	} `json:"featuredImage"`
-	Categories struct {
-		Nodes []struct {
-			Name string `json:"name"`
-			Slug string `json:"slug"`
-		} `json:"nodes"`
-	} `json:"categories"`
+	ID         string     `json:"id"`
+	Title      string     `json:"title"`
+	Excerpt    string     `json:"excerpt"`
+	Slug       string     `json:"slug"`
+	Images     Images     `json:"images"`
+	Categories []Category `json:"categories"`
+	Tags       []Tag      `json:"tags"`
+}
+
+type CategoryData struct {
+	Posts []Recipe `json:"posts"`
 }
 
 type Response struct {
 	PageProps struct {
-		Posts []Recipe `json:"posts"`
+		Category CategoryData `json:"category"`
 	} `json:"pageProps"`
 }
 
+const baseImageURL = "https://kasviskapinastor.blob.core.windows.net/images/"
+
 func (r *Recipe) ToPost() base.Post {
-	// ID
-	strID := try.To1(base64.StdEncoding.DecodeString(r.ID))
-	postID := try.To1(strconv.ParseInt(strings.Split(string(strID), ":")[1], 10, 64))
-
-	// Title
-	titleBytes := make([]byte, len([]byte(r.Title)))
-
-	caser := cases.Title(language.Finnish)
-	_, _ = try.To2(caser.Transform(titleBytes, []byte(r.Title), true))
-
-	// Description
-	startIndex := strings.Index(r.Excerpt, ">")
-	endIndex := strings.LastIndex(r.Excerpt, "<")
-
-	if endIndex < 0 {
-		endIndex = len(r.Excerpt)
+	hashtags := []string{"kasviskapina", "vegaani", "vegaaniresepti"}
+	for _, tag := range r.Tags {
+		hashtags = append(hashtags, tag.Slug)
 	}
 
-	const baseImageURL = "https://www.kasviskapina.fi/_next/image?url=https://kasviskapinastor.blob.core.windows.net/images"
+	imgURL := baseImageURL + r.Images.Featured.Filename
 
 	return base.Post{
-		ID:           postID,
-		Title:        string(titleBytes),
-		Description:  r.Excerpt[startIndex+1 : endIndex],
-		ThumbnailURL: fmt.Sprintf("%s%s&w=384&q=75", baseImageURL, r.FeaturedImage.Nodes.Src),
-		ImageURL:     baseImageURL + r.FeaturedImage.Nodes.Src + "&w=1920&q=75",
+		ID:           slugToID(r.Slug),
+		Title:        strings.ToUpper(r.Title),
+		Description:  r.Excerpt,
+		ThumbnailURL: imgURL,
+		ImageURL:     imgURL,
 		URL:          "https://kasviskapina.fi/reseptit/" + r.Slug,
 		Added:        true,
-		Hashtags:     []string{"kasviskapina", "vegaani", "vegaaniresepti"},
+		Hashtags:     hashtags,
 	}
 }
 
 func FetchNewPosts(
 	recipesFilePath string,
-	_ func(string, string) ([]byte, error),
+	httpGetter func(string, string) ([]byte, error),
 	_ func(string, url.Values, string) (data []byte, err error),
 	previewOnly bool,
 ) (base.RecipeBank, error) {
-	bank, err := doFetchNewPosts(recipesFilePath, previewOnly)
-
+	bank, err := doFetchNewPosts(recipesFilePath, httpGetter, previewOnly)
 	if err == nil {
 		return bank, nil
 	}
+
+	slog.Warn("kk fetch failed, falling back to cached posts", "error", err)
 
 	posts, _ := base.LoadExistingPosts(recipesFilePath)
 
@@ -106,25 +111,26 @@ func FetchNewPosts(
 
 func doFetchNewPosts(
 	recipesFilePath string,
+	httpGetter func(string, string) ([]byte, error),
 	previewOnly bool,
 ) (bank base.RecipeBank, err error) {
 	defer err2.Handle(&err)
 
 	urlRes := string(try.To1(
-		myhttp.DoGetRequest("https://www.kasviskapina.fi/", ""),
+		httpGetter("https://www.kasviskapina.fi/", ""),
 	))
 	endIndex := strings.Index(urlRes, "/_buildManifest.js")
 
 	if endIndex < 0 {
-		return bank, errFeed
+		return bank, fmt.Errorf("%w: build manifest not found", errFeed)
 	}
 
 	startIndex := strings.LastIndex(urlRes[:endIndex], "/")
+	hash := urlRes[startIndex+1 : endIndex]
 
-	// No pagination currently?, fetch all at once
 	res := try.To1(
-		myhttp.DoGetRequest(
-			fmt.Sprintf("https://www.kasviskapina.fi/_next/data/%s/fi/kategoriat/reseptit.json?slug=paaruoka", urlRes[startIndex+1:endIndex]),
+		httpGetter(
+			fmt.Sprintf("https://www.kasviskapina.fi/_next/data/%s/fi/kategoriat/paaruoka.json?slug=paaruoka", hash),
 			""),
 	)
 
@@ -134,10 +140,10 @@ func doFetchNewPosts(
 
 	posts := make([]base.Post, 0)
 
-	for _, receipt := range apiResponse.PageProps.Posts {
-		for _, category := range receipt.Categories.Nodes {
-			if category.Slug == "paaruoka" {
-				posts = append(posts, receipt.ToPost())
+	for _, recipe := range apiResponse.PageProps.Category.Posts {
+		for _, cat := range recipe.Categories {
+			if cat.Slug == "paaruoka" {
+				posts = append(posts, recipe.ToPost())
 
 				break
 			}
@@ -149,6 +155,10 @@ func doFetchNewPosts(
 	})
 
 	slog.Info("Found posts for kk", "count", len(posts))
+
+	if len(posts) == 0 {
+		return bank, fmt.Errorf("%w: zero posts in response", errFeed)
+	}
 
 	if !previewOnly {
 		buffer := &bytes.Buffer{}

@@ -46,8 +46,8 @@ func getUsedIDs[V int64 | string](filePath string, totalCount int64) (usedIDs []
 
 	filteredCount = totalCount - int64(len(usedIDs))
 
-	// all ids are used, reset
-	if filteredCount == 0 {
+	// all ids are used (or used count exceeds total, e.g. posts were removed), reset
+	if filteredCount <= 0 {
 		filteredCount = totalCount
 		usedIDs = make([]V, 0)
 	}
@@ -60,10 +60,27 @@ func ChooseNextPost(posts base.Collection, usedBlogsIDsPath string) base.Post {
 
 	blogIDs := make([]string, 0)
 	for key := range posts {
-		blogIDs = append(blogIDs, key)
+		if len(posts[key].Posts) > 0 {
+			blogIDs = append(blogIDs, key)
+		} else {
+			slog.Warn("Skipping blog with no posts", "id", key)
+		}
 	}
 
-	randomBlogIndex := getRandomIndex(filteredBlogsCount, int64(len(posts)), func(i int) bool {
+	if len(blogIDs) == 0 {
+		slog.Error("No blogs with posts available")
+
+		return base.Post{}
+	}
+
+	// Re-count filtered blogs among those with posts
+	filteredBlogsCount = min(filteredBlogsCount, int64(len(blogIDs)))
+	if filteredBlogsCount <= 0 {
+		filteredBlogsCount = int64(len(blogIDs))
+		usedBlogIDs = make([]string, 0)
+	}
+
+	randomBlogIndex := getRandomIndex(filteredBlogsCount, int64(len(blogIDs)), func(i int) bool {
 		return !slices.Contains(usedBlogIDs, blogIDs[i])
 	})
 	blogID := blogIDs[randomBlogIndex]
