@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
-
 	"github.com/lauravuo/vegaanibotti/blog"
 	"github.com/lauravuo/vegaanibotti/blog/base"
 )

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/lainio/err2/try"
-
 	"github.com/lauravuo/vegaanibotti/blog/kk"
 )
 

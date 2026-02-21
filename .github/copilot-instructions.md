@@ -44,16 +44,15 @@ curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/insta
 
 ## Import Grouping (gci)
 
-Always format imports in three separate groups with a blank line between each:
+Always format imports in two separate groups with a blank line between each:
 
 ```go
 import (
     "os"         // stdlib
     "testing"
 
-    "github.com/lainio/err2/try"  // third-party
-
-    "github.com/lauravuo/vegaanibotti/blog/base"  // local (same module)
+    "github.com/lainio/err2/try"                  // third-party and local module in one group
+    "github.com/lauravuo/vegaanibotti/blog/base"
 )
 ```
 
