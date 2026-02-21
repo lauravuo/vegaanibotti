@@ -1,6 +1,7 @@
 package kk_test
 
 import (
+	"errors"
 	"os"
 	"testing"
 
@@ -10,6 +11,8 @@ import (
 
 const testDataPath = "./test_data/"
 
+var errTest = errors.New("test error")
+
 func getter(url, _ string) ([]byte, error) {
 	if url == "https://www.kasviskapina.fi/" {
 		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
@@ -18,6 +21,22 @@ func getter(url, _ string) ([]byte, error) {
 	data := try.To1(os.ReadFile("./test.json"))
 
 	return data, nil
+}
+
+func getterNoManifest(_, _ string) ([]byte, error) {
+	return []byte(`<html><body></body></html>`), nil
+}
+
+func getterNoPaaruoka(url, _ string) ([]byte, error) {
+	if url == "https://www.kasviskapina.fi/" {
+		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
+	}
+
+	return []byte(`{"pageProps":{"category":{"posts":[]}}}`), nil
+}
+
+func getterError(_, _ string) ([]byte, error) {
+	return nil, errTest
 }
 
 func setup() {
@@ -78,3 +97,63 @@ func TestFetchNewPosts(t *testing.T) {
 		}
 	}
 }
+
+func TestFetchNewPostsFallback(t *testing.T) {
+	t.Parallel()
+
+	// getter returns an error - FetchNewPosts should fall back to cached posts (empty)
+	recipes, err := kk.FetchNewPosts("./test_data/recipes_fallback.json", getterError, nil, false)
+	if err != nil {
+		t.Errorf("Expected success with fallback, got: %s", err)
+	}
+
+	if len(recipes.Posts) != 0 {
+		t.Errorf("Expected 0 fallback posts, got %d", len(recipes.Posts))
+	}
+}
+
+func TestFetchNewPostsNoManifest(t *testing.T) {
+	t.Parallel()
+
+	// getter returns HTML without build manifest - should fall back to cached posts (empty)
+	recipes, err := kk.FetchNewPosts("./test_data/recipes_no_manifest.json", getterNoManifest, nil, false)
+	if err != nil {
+		t.Errorf("Expected success with fallback, got: %s", err)
+	}
+
+	if len(recipes.Posts) != 0 {
+		t.Errorf("Expected 0 fallback posts, got %d", len(recipes.Posts))
+	}
+}
+
+func TestFetchNewPostsNoPaaruoka(t *testing.T) {
+	t.Parallel()
+
+	// getter returns valid response but zero paaruoka posts - should fall back
+	recipes, err := kk.FetchNewPosts("./test_data/recipes_no_paaruoka.json", getterNoPaaruoka, nil, false)
+	if err != nil {
+		t.Errorf("Expected success with fallback, got: %s", err)
+	}
+
+	if len(recipes.Posts) != 0 {
+		t.Errorf("Expected 0 fallback posts, got %d", len(recipes.Posts))
+	}
+}
+
+func TestFetchNewPostsPreviewOnly(t *testing.T) {
+	t.Parallel()
+
+	recipes, err := kk.FetchNewPosts("./test_data/recipes_preview.json", getter, nil, true)
+	if err != nil {
+		t.Errorf("Expected success, got: %s", err)
+	}
+
+	if len(recipes.Posts) == 0 {
+		t.Errorf("Expected to find posts, got 0.")
+	}
+
+	if _, statErr := os.Stat("./test_data/recipes_preview.json"); !errors.Is(statErr, os.ErrNotExist) {
+		t.Errorf("Expected recipes file to not be written in preview mode")
+	}
+}
+
