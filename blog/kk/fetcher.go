@@ -23,11 +23,27 @@ const UsedIDsPath = base.DataPath + "/kk/used.json"
 
 var errFeed = errors.New("unable to parse feed")
 
+// slugIDMap tracks which slug was first associated with a given hash-derived ID.
+// This allows us to detect and log potential hash collisions.
+var slugIDMap = make(map[int64]string)
+
 // slugToID derives a stable int64 ID from a slug using FNV-1a hash.
 func slugToID(slug string) int64 {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(slug))
-	return int64(h.Sum64() & 0x7fffffffffffffff) // keep positive
+	id := int64(h.Sum64() & 0x7fffffffffffffff) // keep positive
+
+	if existingSlug, ok := slugIDMap[id]; ok && existingSlug != slug {
+		slog.Warn("slugToID hash collision detected",
+			"id", id,
+			"existing_slug", existingSlug,
+			"new_slug", slug,
+		)
+	} else if !ok {
+		slugIDMap[id] = slug
+	}
+
+	return id
 }
 
 type Image struct {
