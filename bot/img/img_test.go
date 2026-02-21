@@ -66,3 +66,20 @@ func TestGenerateThumbnail(t *testing.T) {
 		t.Error("Small thumbnail does not exist")
 	}
 }
+
+func TestUploadToCloud(t *testing.T) {
+	t.Parallel()
+
+	// Provide a valid file path to reach the AWS config code without panicking on os.Open
+	filePath := testDataPath + "/dummy.txt"
+	try.To(os.WriteFile(filePath, []byte("dummy"), 0o600))
+	defer os.Remove(filePath)
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic due to invalid AWS credentials/endpoint, but got none")
+		}
+	}()
+
+	img.UploadToCloud([]string{filePath})
+}
