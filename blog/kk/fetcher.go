@@ -91,7 +91,6 @@ func FetchNewPosts(
 	previewOnly bool,
 ) (base.RecipeBank, error) {
 	bank, err := doFetchNewPosts(recipesFilePath, previewOnly)
-
 	if err == nil {
 		return bank, nil
 	}
