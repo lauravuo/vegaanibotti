@@ -13,7 +13,9 @@ const (
 	testDataPath    = "./test_data"
 	usedBlogIDsPath = testDataPath + "/used.json"
 	usedIDsPath     = testDataPath + "/cc/used.json"
+	kkUsedIDsPath   = testDataPath + "/kk/used.json"
 	ccTestDataPath  = testDataPath + "/cc"
+	kkTestDataPath  = testDataPath + "/kk"
 )
 
 func setup() {
@@ -94,5 +96,201 @@ func TestChooseNextPost(t *testing.T) {
 
 	if string(contents) != expected {
 		t.Errorf("Mismatch with expected ids %s (%s)", string(contents), expected)
+	}
+}
+
+func TestChooseNextPostNoBlogsWithPosts(t *testing.T) {
+	t.Parallel()
+
+	// All blogs have empty post lists - should return empty Post
+	posts := base.Collection{
+		"cc": {
+			Posts:       []base.Post{},
+			UsedIDsPath: testDataPath + "/cc/used_noblogs.json",
+		},
+	}
+
+	nextPost := blog.ChooseNextPost(posts, testDataPath+"/used_noblogs.json")
+
+	if nextPost.ID != 0 {
+		t.Errorf("Expected empty post, got id %d", nextPost.ID)
+	}
+}
+
+func TestChooseNextPostSkipsEmptyBlog(t *testing.T) {
+	t.Parallel()
+
+	try.To(os.MkdirAll(kkTestDataPath, 0o700))
+
+	// "kk" has no posts, only "cc" should be chosen
+	posts := base.Collection{
+		"cc": {
+			Posts: []base.Post{{
+				ID:          10,
+				Title:       "title",
+				Description: "description",
+				URL:         "https://example.com",
+				Hashtags:    []string{"food"},
+				Added:       true,
+			}},
+			UsedIDsPath: testDataPath + "/cc/used_skip.json",
+		},
+		"kk": {
+			Posts:       []base.Post{},
+			UsedIDsPath: kkUsedIDsPath,
+		},
+	}
+
+	nextPost := blog.ChooseNextPost(posts, testDataPath+"/used_skip.json")
+
+	if nextPost.ID != 10 {
+		t.Errorf("Expected post id 10, got %d", nextPost.ID)
+	}
+}
+
+func TestChooseNextPostWithPresetUsedIDs(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		usedPath    string
+		usedContent string
+		postID      int64
+		expectedID  int64
+	}{
+		{
+			name:        "stale blog id filtered out",
+			usedPath:    testDataPath + "/used_stale.json",
+			usedContent: `["kk"]`,
+			postID:      20,
+			expectedID:  20,
+		},
+		{
+			name:        "all blogs used triggers reset",
+			usedPath:    testDataPath + "/used_reset.json",
+			usedContent: `["cc"]`,
+			postID:      30,
+			expectedID:  30,
+		},
+	}
+
+	for _, testCase := range tests {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+
+			try.To(os.WriteFile(testCase.usedPath, []byte(testCase.usedContent), base.WritePerm))
+
+			posts := base.Collection{
+				"cc": {
+					Posts: []base.Post{{
+						ID:          testCase.postID,
+						Title:       "title",
+						Description: "description",
+						URL:         "https://example.com",
+						Hashtags:    []string{"food"},
+						Added:       true,
+					}},
+					UsedIDsPath: testDataPath + "/cc/used_preset.json",
+				},
+			}
+
+			nextPost := blog.ChooseNextPost(posts, testCase.usedPath)
+
+			if nextPost.ID != testCase.expectedID {
+				t.Errorf("Expected post id %d, got %d", testCase.expectedID, nextPost.ID)
+			}
+		})
+	}
+}
+
+func TestChooseNextPostFilteringLoop(t *testing.T) {
+	t.Parallel()
+
+	try.To(os.MkdirAll(kkTestDataPath, 0o700))
+
+	usedPath := testDataPath + "/used_filtering.json"
+
+	// usedPath has "cc" (valid) - getUsedIDs gets totalCount=2, returns ["cc"], no reset
+	// filtering loop runs and keeps "cc" → filteredBlogsCount = 2-1 = 1 > 0, picks "kk"
+	try.To(os.WriteFile(usedPath, []byte(`["cc"]`), base.WritePerm))
+
+	posts := base.Collection{
+		"cc": {
+			Posts: []base.Post{{
+				ID:          40,
+				Title:       "title",
+				Description: "description",
+				URL:         "https://example.com",
+				Hashtags:    []string{"food"},
+				Added:       true,
+			}},
+			UsedIDsPath: testDataPath + "/cc/used_filtering.json",
+		},
+		"kk": {
+			Posts: []base.Post{{
+				ID:          41,
+				Title:       "title",
+				Description: "description",
+				URL:         "https://example.com",
+				Hashtags:    []string{"food"},
+				Added:       true,
+			}},
+			UsedIDsPath: testDataPath + "/kk/used_filtering.json",
+		},
+	}
+
+	nextPost := blog.ChooseNextPost(posts, usedPath)
+
+	if nextPost.ID != 40 && nextPost.ID != 41 {
+		t.Errorf("Expected post id 40 or 41, got %d", nextPost.ID)
+	}
+}
+
+func TestChooseNextPostFilteringLoopReset(t *testing.T) {
+	t.Parallel()
+
+	try.To(os.MkdirAll(kkTestDataPath, 0o700))
+
+	usedPath := testDataPath + "/used_filtering_reset.json"
+
+	// posts map has 3 blogs but "old" has no posts → totalCount=3, blogIDs=["cc","kk"]
+	// usedPath has ["cc","kk"] - getUsedIDs(3) returns ["cc","kk"] (3-2=1>0, no reset)
+	// filtering: both "cc" and "kk" are in blogIDs → filteredUsedBlogIDs=["cc","kk"]
+	// filteredBlogsCount = 2-2 = 0 → triggers reset in ChooseNextPost
+	try.To(os.WriteFile(usedPath, []byte(`["cc","kk"]`), base.WritePerm))
+
+	posts := base.Collection{
+		"cc": {
+			Posts: []base.Post{{
+				ID:          50,
+				Title:       "title",
+				Description: "description",
+				URL:         "https://example.com",
+				Hashtags:    []string{"food"},
+				Added:       true,
+			}},
+			UsedIDsPath: testDataPath + "/cc/used_filtering_reset.json",
+		},
+		"kk": {
+			Posts: []base.Post{{
+				ID:          51,
+				Title:       "title",
+				Description: "description",
+				URL:         "https://example.com",
+				Hashtags:    []string{"food"},
+				Added:       true,
+			}},
+			UsedIDsPath: testDataPath + "/kk/used_filtering_reset.json",
+		},
+		"old": {
+			Posts:       []base.Post{},
+			UsedIDsPath: testDataPath + "/old/used.json",
+		},
+	}
+
+	nextPost := blog.ChooseNextPost(posts, usedPath)
+
+	if nextPost.ID != 50 && nextPost.ID != 51 {
+		t.Errorf("Expected post id 50 or 51 after reset, got %d", nextPost.ID)
 	}
 }
