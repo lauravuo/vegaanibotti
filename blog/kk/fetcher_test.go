@@ -14,6 +14,7 @@ func getter(url, _ string) ([]byte, error) {
 	if url == "https://www.kasviskapina.fi/" {
 		return []byte(`<html><body><script src="/_next/static/test-hash/_buildManifest.js"></script></body></html>`), nil
 	}
+
 	data := try.To1(os.ReadFile("./test.json"))
 
 	return data, nil
@@ -37,7 +38,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestFetchNewPosts(t *testing.T) {
+func TestFetchNewPosts(t *testing.T) { //nolint:cyclop
 	t.Parallel()
 
 	recipes, err := kk.FetchNewPosts("./test_data/recipes.json", getter, nil, false)
@@ -55,19 +56,24 @@ func TestFetchNewPosts(t *testing.T) {
 		if post.ID == 0 {
 			t.Errorf("Post missing ID")
 		}
+
 		if post.Title == "" {
 			t.Errorf("Post missing Title")
 		}
+
 		if post.URL == "" {
 			t.Errorf("Post missing URL")
 		}
+
 		if post.ThumbnailURL == "" {
 			t.Errorf("Post missing ThumbnailURL")
 		}
+
 		if post.ImageURL == "" {
 			t.Errorf("Post missing ImageURL")
 		}
-		if post.Hashtags == nil || len(post.Hashtags) == 0 {
+
+		if len(post.Hashtags) == 0 {
 			t.Errorf("Post missing Hashtags")
 		}
 	}

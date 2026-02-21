@@ -59,6 +59,7 @@ func ChooseNextPost(posts base.Collection, usedBlogsIDsPath string) base.Post {
 	usedBlogIDs, _ := getUsedIDs[string](usedBlogsIDsPath, int64(len(posts)))
 
 	blogIDs := make([]string, 0)
+
 	for key := range posts {
 		if len(posts[key].Posts) > 0 {
 			blogIDs = append(blogIDs, key)

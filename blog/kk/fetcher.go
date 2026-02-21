@@ -31,19 +31,19 @@ var slugIDMap = make(map[int64]string) //nolint:gochecknoglobals
 func slugToID(slug string) int64 {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(slug))
-	id := int64(h.Sum64() & 0x7fffffffffffffff) // keep positive
+	hashID := int64(h.Sum64() & 0x7fffffffffffffff) // keep positive
 
-	if existingSlug, ok := slugIDMap[id]; ok && existingSlug != slug {
+	if existingSlug, found := slugIDMap[hashID]; found && existingSlug != slug {
 		slog.Warn("slugToID hash collision detected",
-			"id", id,
+			"id", hashID,
 			"existing_slug", existingSlug,
 			"new_slug", slug,
 		)
-	} else if !ok {
-		slugIDMap[id] = slug
+	} else if !found {
+		slugIDMap[hashID] = slug
 	}
 
-	return id
+	return hashID
 }
 
 type Image struct {
@@ -85,7 +85,9 @@ type Response struct {
 const baseImageURL = "https://kasviskapinastor.blob.core.windows.net/images/"
 
 func (r *Recipe) ToPost() base.Post {
-	hashtags := []string{"kasviskapina", "vegaani", "vegaaniresepti"}
+	hashtags := make([]string, 0, 3+len(r.Tags))
+	hashtags = append(hashtags, "kasviskapina", "vegaani", "vegaaniresepti")
+
 	for _, tag := range r.Tags {
 		hashtags = append(hashtags, tag.Slug)
 	}
@@ -156,7 +158,9 @@ func doFetchNewPosts(
 
 	posts := make([]base.Post, 0)
 
-	for _, recipe := range apiResponse.PageProps.Category.Posts {
+	for recipeIndex := range apiResponse.PageProps.Category.Posts {
+		recipe := &apiResponse.PageProps.Category.Posts[recipeIndex]
+
 		for _, cat := range recipe.Categories {
 			if cat.Slug == "paaruoka" {
 				posts = append(posts, recipe.ToPost())
