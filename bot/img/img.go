@@ -224,19 +224,14 @@ func UploadToCloud(filePaths []string) []string {
 	accountID := os.Getenv("CLOUD_ACCOUNT_ID")
 	accessKeyID := os.Getenv("CLOUD_ACCESS_KEY_ID")
 	accessKeySecret := os.Getenv("CLOUD_ACCESS_KEY_SECRET")
-	r2Resolver := aws.EndpointResolverWithOptionsFunc(func(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
-		return aws.Endpoint{
-			URL: fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID),
-		}, nil
-	})
-
 	cfg := try.To1(config.LoadDefaultConfig(context.TODO(),
-		config.WithEndpointResolverWithOptions(r2Resolver),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, accessKeySecret, "")),
 		config.WithRegion("auto"),
 	))
 
-	client := s3.NewFromConfig(cfg)
+	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(fmt.Sprintf("https://%s.r2.cloudflarestorage.com", accountID))
+	})
 	now := time.Now()
 	year := fmt.Sprintf("%d", now.Year())
 	month := fmt.Sprintf("%02d", now.Month())
