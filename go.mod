@@ -1,6 +1,6 @@
 module github.com/lauravuo/vegaanibotti
 
-go 1.23
+go 1.24.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.1
@@ -12,7 +12,7 @@ require (
 	github.com/mattn/go-mastodon v0.0.9
 	golang.org/x/image v0.24.0
 	golang.org/x/net v0.35.0
-	golang.org/x/text v0.22.0
+	golang.org/x/text v0.34.0
 )
 
 require (

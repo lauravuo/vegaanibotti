@@ -82,7 +82,7 @@ func TestFetchNewPosts(t *testing.T) {
 	}
 
 	if post.ImageURL != post.ThumbnailURL {
-		t.Errorf("Mismatch with post image: " + post.ImageURL)
+		t.Errorf("Mismatch with post image: %s", post.ImageURL)
 	}
 
 	if len(post.Hashtags) != 3 {

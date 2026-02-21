@@ -19,19 +19,8 @@ func TestPostToSite_EscapesQuotesInTitle(t *testing.T) {
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
 
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer func() {
-		_ = os.Chdir(originalDir)
-	}()
-
 	// Change to temp directory
-	if chdirErr := os.Chdir(tempDir); chdirErr != nil {
-		t.Fatal(chdirErr)
-	}
+	t.Chdir(tempDir)
 
 	post := &base.Post{
 		Title:        "Test \"quoted\" title",
@@ -40,7 +29,7 @@ func TestPostToSite_EscapesQuotesInTitle(t *testing.T) {
 		Author:       "Test Author",
 	}
 
-	err = site.PostToSite(post)
+	err := site.PostToSite(post)
 	if err != nil {
 		t.Fatalf("PostToSite failed: %v", err)
 	}
