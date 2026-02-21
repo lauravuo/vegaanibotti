@@ -72,6 +72,7 @@ func TestUploadToCloud(t *testing.T) {
 
 	// Provide a valid file path to reach the AWS config code without panicking on os.Open
 	filePath := testDataPath + "/dummy.txt"
+
 	try.To(os.WriteFile(filePath, []byte("dummy"), 0o600))
 	defer os.Remove(filePath)
 

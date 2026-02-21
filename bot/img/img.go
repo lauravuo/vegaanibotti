@@ -172,6 +172,7 @@ func writeWithFont(img draw.Image, text, delimiter, fontFile string, fontSizeFac
 func getImageFromFilePath(filePath string) image.Image {
 	f := try.To1(os.Open(filePath))
 	defer f.Close()
+
 	img, _ := try.To2(image.Decode(f))
 
 	return img
@@ -237,7 +238,7 @@ func UploadToCloud(filePaths []string) []string {
 	month := fmt.Sprintf("%02d", now.Month())
 	date := fmt.Sprintf("%s-%s-%02d", year, month, now.Day())
 
-	res := make([]string, 0)
+	res := make([]string, 0, len(filePaths))
 
 	for _, filePath := range filePaths {
 		file := try.To1(os.Open(filePath))

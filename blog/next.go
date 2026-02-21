@@ -58,7 +58,7 @@ func getUsedIDs[V int64 | string](filePath string, totalCount int64) (usedIDs []
 func ChooseNextPost(posts base.Collection, usedBlogsIDsPath string) base.Post {
 	usedBlogIDs, filteredBlogsCount := getUsedIDs[string](usedBlogsIDsPath, int64(len(posts)))
 
-	blogIDs := make([]string, 0)
+	blogIDs := make([]string, 0, len(posts))
 	for key := range posts {
 		blogIDs = append(blogIDs, key)
 	}
