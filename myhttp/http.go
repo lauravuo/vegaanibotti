@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
+
 func getClient() *http.Client {
 	return &http.Client{
 		Timeout: time.Second * 30, // Timeout after 30 seconds
@@ -28,6 +30,7 @@ func DoGetRequest(path, authHeader string) (data []byte, err error) {
 	if authHeader != "" {
 		req.Header.Set("Authorization", authHeader)
 	}
+	req.Header.Set("User-Agent", userAgent)
 
 	res, err := getClient().Do(req)
 	if err != nil {
@@ -59,6 +62,7 @@ func DoPostRequest(path string, values url.Values, authHeader string) (data []by
 
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", userAgent)
 
 	res, err := getClient().Do(req)
 	if err != nil {
@@ -96,6 +100,7 @@ func DoJSONBytesRequest(path, method string, values []byte, authHeader string) (
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", userAgent)
 
 	res, err := getClient().Do(req)
 	if err != nil {
