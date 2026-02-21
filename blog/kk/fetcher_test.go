@@ -64,5 +64,14 @@ func TestFetchNewPosts(t *testing.T) {
 		if post.URL == "" {
 			t.Errorf("Post missing URL")
 		}
+		if post.ThumbnailURL == "" {
+			t.Errorf("Post missing ThumbnailURL")
+		}
+		if post.ImageURL == "" {
+			t.Errorf("Post missing ImageURL")
+		}
+		if post.Hashtags == nil || len(post.Hashtags) == 0 {
+			t.Errorf("Post missing Hashtags")
+		}
 	}
 }
