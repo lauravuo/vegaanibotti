@@ -159,4 +159,3 @@ func TestFetchNewPostsPreviewOnly(t *testing.T) {
 		t.Errorf("Expected recipes file to not be written in preview mode")
 	}
 }
-

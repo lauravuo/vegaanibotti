@@ -152,11 +152,11 @@ func TestChooseNextPostWithPresetUsedIDs(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name         string
-		usedPath     string
-		usedContent  string
-		postID       int64
-		expectedID   int64
+		name        string
+		usedPath    string
+		usedContent string
+		postID      int64
+		expectedID  int64
 	}{
 		{
 			name:        "stale blog id filtered out",
@@ -294,4 +294,3 @@ func TestChooseNextPostFilteringLoopReset(t *testing.T) {
 		t.Errorf("Expected post id 50 or 51 after reset, got %d", nextPost.ID)
 	}
 }
-
