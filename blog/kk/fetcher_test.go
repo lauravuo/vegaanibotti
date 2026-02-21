@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestFetchNewPosts(t *testing.T) { //nolint:cyclop
+func TestFetchNewPosts(t *testing.T) {
 	t.Parallel()
 
 	recipes, err := kk.FetchNewPosts("./test_data/recipes.json", getter, nil, false)
