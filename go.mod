@@ -1,6 +1,6 @@
 module github.com/lauravuo/vegaanibotti
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.2
@@ -11,7 +11,7 @@ require (
 	github.com/lainio/err2 v1.2.3
 	github.com/mattn/go-mastodon v0.0.10
 	golang.org/x/image v0.36.0
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 )
 
 require (
