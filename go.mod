@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.2
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lainio/err2 v1.2.3
-	github.com/mattn/go-mastodon v0.0.10
+	github.com/mattn/go-mastodon v0.0.11
 	golang.org/x/image v0.36.0
 	golang.org/x/net v0.51.0
 )
@@ -31,5 +31,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.7 // indirect
 	github.com/aws/smithy-go v1.24.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
+	github.com/tomnomnom/linkheader v0.0.0-20250811210735-e5fe3b51442e // indirect
 )
