@@ -10,7 +10,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lainio/err2 v1.2.3
 	github.com/mattn/go-mastodon v0.0.11
-	golang.org/x/image v0.36.0
+	golang.org/x/image v0.37.0
 	golang.org/x/net v0.51.0
 )
 
