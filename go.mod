@@ -11,7 +11,7 @@ require (
 	github.com/lainio/err2 v1.2.3
 	github.com/mattn/go-mastodon v0.0.11
 	golang.org/x/image v0.38.0
-	golang.org/x/net v0.52.0
+	golang.org/x/net v0.53.0
 )
 
 require (
