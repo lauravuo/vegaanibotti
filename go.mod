@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.99.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/lainio/err2 v1.2.3
-	github.com/mattn/go-mastodon v0.0.11
+	github.com/mattn/go-mastodon v0.0.13
 	golang.org/x/image v0.39.0
 	golang.org/x/net v0.53.0
 )
